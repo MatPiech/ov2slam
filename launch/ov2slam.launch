@@ -7,10 +7,11 @@
 <launch>
     <arg name="bag" default=""/>
     <arg name="stream_rate" default="1.0"/>
+    <arg name="delay" default="0"/>
     <arg name="visualize" default="true"/>
     <arg name="config" default="$(find ov2slam)/parameters_files/accurate/kitti/kitti_00-02.yaml"/>
 
-    <node pkg="rosbag" type="play" name="player" required="true" args="$(arg bag) --rate $(arg stream_rate)" if="$(eval bag != '')"/>
+    <node pkg="rosbag" type="play" name="player" required="true" args="$(arg bag) --rate $(arg stream_rate) --delay $(arg delay)" if="$(eval bag != '')"/>
 
     <node pkg="ov2slam" type="ov2slam_node" name="ov2slam_node" output="screen" args="$(arg config)" required="true"/>
 

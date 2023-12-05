@@ -17,6 +17,3 @@ RUN apt-get update \
 WORKDIR /ws/
 
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make
-
-
-
