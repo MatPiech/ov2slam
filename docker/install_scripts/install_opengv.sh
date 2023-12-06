@@ -29,4 +29,4 @@ mkdir -p "$BUILD_DIR/"
 mkdir "${BUILD_DIR}/opengv/build"
 cd "${BUILD_DIR}/opengv/build"
 cmake ..
-make -j`nproc` && make install
+make -j 2 && make install
