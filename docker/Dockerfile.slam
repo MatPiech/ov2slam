@@ -11,12 +11,10 @@ RUN apt-get update \
         libatlas-base-dev \
         libeigen3-dev  \
         libsuitesparse-dev  \
-    && rm -rf /var/lib/apt/lists/* \
-    && sh ./build_thirdparty.sh
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sh ./build_thirdparty.sh
 
 WORKDIR /ws/
 
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make
-
-
-
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make -j2 -l2
