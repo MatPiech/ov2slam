@@ -7,3 +7,6 @@
 [submodule "thirdparty/obindex2"]
 	path = thirdparty/obindex2
 	url = https://github.com/emiliofidalgo/obindex2.git
+[submodule "thirdparty/ibow_lcd"]
+	path = thirdparty/ibow_lcd
+	url = https://github.com/emiliofidalgo/ibow-lcd.git
