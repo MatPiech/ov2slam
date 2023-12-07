@@ -4,7 +4,7 @@ FROM $BASE_IMAGE
 
 # opencv version must be consistent with the version of ROS, 
 # othervize you may need to rebuild image-transport and other ROS packages
-ARG OPENCV_VERSION=4.2.0
+ARG OPENCV_VERSION=4.8.0
 
 
 # set to true if you want to keep opencv and other sources and build files left in the docker

@@ -1,4 +1,4 @@
-ARG ROS_DISTRO=noetic
+ARG ROS_DISTRO=humble
 FROM ov2slam-${ROS_DISTRO}-dependencies
 
 ADD . /ws/src/ov2slam
@@ -16,4 +16,4 @@ RUN apt-get update \
 
 WORKDIR /ws/
 
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make
+RUN source /opt/ros/$ROS_DISTRO/setup.sh && colcon build
