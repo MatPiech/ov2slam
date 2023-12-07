@@ -41,10 +41,11 @@ echo ""
 echo "Building Ceres lib!"
 echo ""
 
+# https://ceres-solver.googlesource.com/ceres-solver/+/941ea13475913ef8322584f7401633de9967ccc8/cmake/FindTBB.cmake
 cd Thirdparty/ceres-solver
 mkdir build
 mkdir install
 cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" -DBUILD_EXAMPLES=OFF
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" -DBUILD_EXAMPLES=OFF
 make -j4 install
 cd ../../..

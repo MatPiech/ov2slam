@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(ov2slam)
 
 if(POLICY CMP0022)
@@ -11,10 +11,11 @@ endif()
 # Set to OFF if you did not compile OpenCV w. opencv_contrib
 set(WITH_OPENCV_CONTRIB ON)
 
-if( ${CMAKE_VERSION} VERSION_LESS "3.8.2" )
-    set(CMAKE_CXX_STANDARD 14)
-else()
-    set(CMAKE_CXX_STANDARD 17)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 set(CMAKE_BUILD_TYPE "Release")
@@ -42,16 +43,15 @@ endif()
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED
-    COMPONENTS
-        roscpp
-        std_msgs
-        sensor_msgs
-        cv_bridge
-        image_transport
-        tf
-        pcl_ros
-)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(pcl_ros REQUIRED)
 
 # iBOW-LCD
 #
@@ -117,7 +117,7 @@ if (Sophus_FOUND)
   message(STATUS "Found Sophus lib : ${Sophus_VERSION} - ${Sophus_DIR}")
 endif (Sophus_FOUND)
 
-catkin_package()
+ament_package()
 
 ###########
 ## Build ##

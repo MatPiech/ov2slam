@@ -26,29 +26,29 @@
 #pragma once
 
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <std_msgs/Header.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/Bool.h>
+#include <std_msgs/msg/header.hpp>
+#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/bool.hpp>
 
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/PointCloud.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/point_cloud.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/image_encodings.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <nav_msgs/Path.h>
-#include <nav_msgs/Odometry.h>
+#include <nav_msgs/msg/path.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
-#include <geometry_msgs/PointStamped.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Quaternion.h>
-#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/msg/point_stamped.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
-#include <visualization_msgs/Marker.h>
-#include <tf/transform_broadcaster.h>
+#include <visualization_msgs/msg/marker.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <pcl_ros/point_cloud.h>
 
@@ -68,29 +68,29 @@ public:
     {
         std::cout << "\nROS visualizer is being created...\n";
 
-        pub_image_track_ = n.advertise<sensor_msgs::Image>("image_track", 1000);
+        pub_image_track_ = n->create_publisher<sensor_msgs::msg::Image>("image_track", 1000);
 
-        pub_vo_traj_ = n.advertise<visualization_msgs::Marker>("vo_traj", 1000);
-        pub_vo_pose_ = n.advertise<geometry_msgs::PoseStamped>("vo_pose", 1000);
+        pub_vo_traj_ = n->create_publisher<visualization_msgs::msg::Marker>("vo_traj", 1000);
+        pub_vo_pose_ = n->create_publisher<geometry_msgs::msg::PoseStamped>("vo_pose", 1000);
 
-        vo_traj_msg_.type = visualization_msgs::Marker::LINE_STRIP;
+        vo_traj_msg_.type = visualization_msgs::msg::Marker::LINE_STRIP;
         vo_traj_msg_.color.a = 1.0;
         vo_traj_msg_.color.r = 0.25;
         vo_traj_msg_.color.g = 1.0;
         vo_traj_msg_.color.b = 0.25;
         vo_traj_msg_.scale.x = 0.02;
 
-        camera_pose_visual_pub_ = n.advertise<visualization_msgs::MarkerArray>("cam_pose_visual", 1000);
+        camera_pose_visual_pub_ = n->create_publisher<visualization_msgs::msg::MarkerArray>("cam_pose_visual", 1000);
 
         cameraposevisual_.setScale(0.1);
         cameraposevisual_.setLineWidth(0.01);
 
-        pub_point_cloud_ = n.advertise<pcl::PointCloud<pcl::PointXYZRGB>>("point_cloud", 1000);
+        pub_point_cloud_ = n->create_publisher<pcl::PointCloud<pcl::PointXYZRGB>>("point_cloud", 1000);
         
-        pub_kfs_traj_ = n.advertise<visualization_msgs::Marker>("kfs_traj", 1000);
-        pub_kfs_pose_ = n.advertise<visualization_msgs::MarkerArray>("local_kfs_window", 1000);
+        pub_kfs_traj_ = n->create_publisher<visualization_msgs::msg::Marker>("kfs_traj", 1000);
+        pub_kfs_pose_ = n->create_publisher<visualization_msgs::msg::MarkerArray>("local_kfs_window", 1000);
 
-        pub_final_kfs_traj_ = n.advertise<visualization_msgs::Marker>("final_kfs_traj", 1000);
+        pub_final_kfs_traj_ = n->create_publisher<visualization_msgs::msg::Marker>("final_kfs_traj", 1000);
 
         kfs_traj_msg_ = vo_traj_msg_;
         kfs_traj_msg_.color.r = 0.25;
@@ -109,10 +109,10 @@ public:
             return;
         }
 
-        std_msgs::Header header;
+        std_msgs::msg::Header header;
         header.frame_id = "world";
-        header.stamp = ros::Time(time);
-        sensor_msgs::ImagePtr imgTrackMsg = cv_bridge::CvImage(header, "rgb8", imgTrack).toImageMsg();
+        header.stamp = rclcpp::Time(time);
+        sensor_msgs::msg::ImagePtr imgTrackMsg = cv_bridge::CvImage(header, "rgb8", imgTrack).toImageMsg();
         pub_image_track_.publish(imgTrackMsg);
     }
 
@@ -120,10 +120,10 @@ public:
     {   
         // 1. Publish marker message
         // =========================
-        vo_traj_msg_.header.stamp = ros::Time(time);
+        vo_traj_msg_.header.stamp = rclcpp::Time(time);
         vo_traj_msg_.header.frame_id = "world";
 
-        geometry_msgs::Point p;
+        geometry_msgs::msg::Point p;
         const Eigen::Vector3d &twc = Twc.translation();
         p.x = twc.x(); p.y = twc.y(); p.z = twc.z();
 
@@ -141,8 +141,8 @@ public:
 
         // 2. Publish Pose Stamped + tf
         // ============================
-        geometry_msgs::PoseStamped Twc_msg;
-        geometry_msgs::Quaternion q;
+        geometry_msgs::msg::PoseStamped Twc_msg;
+        geometry_msgs::msg::Quaternion q;
         const Eigen::Quaterniond eigen_q(Twc.unit_quaternion());
 
         Twc_msg.pose.position = p;
@@ -155,13 +155,13 @@ public:
 
         pub_vo_pose_.publish(Twc_msg);
 
-        tf::Transform transform;
-        transform.setOrigin(tf::Vector3(p.x, p.y, p.z));
-        tf::Quaternion qtf(q.x, q.y, q.z, q.w);
+        tf2::Transform transform;
+        transform.setOrigin(tf2::Vector3(p.x, p.y, p.z));
+        tf2::Quaternion qtf(q.x, q.y, q.z, q.w);
         transform.setRotation(qtf);
 
-        static tf::TransformBroadcaster br;
-        br.sendTransform(tf::StampedTransform(transform, ros::Time(time), "world", "camera"));
+        static tf2::TransformBroadcaster br;
+        br.sendTransform(tf2::StampedTransform(transform, rclcpp::Time(time), "world", "camera"));
 
         // 3. Publish camera visual
         // =========================
@@ -173,7 +173,7 @@ public:
 
         // if( vo_traj_msg_.points.size() >= 3600 ) {
         //     size_t nbpts = vo_traj_msg_.points.size();
-        //     std::vector<geometry_msgs::Point> vtmp;
+        //     std::vector<geometry_msgs::msg::Point> vtmp;
         //     // if( nbpts / 20 < 3600 ) {
         //         vtmp.reserve(nbpts / 20);
         //         for( size_t i = 0 ; i < nbpts ; i+=20 ) {
@@ -209,11 +209,11 @@ public:
             return;
         }
 
-        std_msgs::Header header;
+        std_msgs::msg::Header header;
         header.frame_id = "world";
-        header.stamp = ros::Time(time);
+        header.stamp = rclcpp::Time(time);
 
-        visualization_msgs::MarkerArray markerArray_msg;
+        visualization_msgs::msg::MarkerArray markerArray_msg;
 
         int j = 0;
 
@@ -239,9 +239,9 @@ public:
             return;
         }
 
-        std_msgs::Header header;
+        std_msgs::msg::Header header;
         header.frame_id = "world";
-        header.stamp = ros::Time(time);
+        header.stamp = rclcpp::Time(time);
 
         pcloud->header = pcl_conversions::toPCL(header);
         pub_point_cloud_.publish(pcloud);
@@ -249,7 +249,7 @@ public:
 
     void addKFsTraj(const Sophus::SE3d &Twc)
     {
-        geometry_msgs::Point p;
+        geometry_msgs::msg::Point p;
         const Eigen::Vector3d twc = Twc.translation();
         p.x = twc.x(); p.y = twc.y(); p.z = twc.z();
 
@@ -267,7 +267,7 @@ public:
             return;
         }
 
-        kfs_traj_msg_.header.stamp = ros::Time(time);
+        kfs_traj_msg_.header.stamp = rclcpp::Time(time);
         kfs_traj_msg_.header.frame_id = "world";
 
         pub_kfs_traj_.publish(kfs_traj_msg_);
@@ -279,10 +279,10 @@ public:
             return;
         }
 
-        final_kfs_traj_msg_.header.stamp = ros::Time(time);
+        final_kfs_traj_msg_.header.stamp = rclcpp::Time(time);
         final_kfs_traj_msg_.header.frame_id = "world";
 
-        geometry_msgs::Point p;
+        geometry_msgs::msg::Point p;
         const Eigen::Vector3d twc = Twc.translation();
         p.x = twc.x(); p.y = twc.y(); p.z = twc.z();
 
@@ -293,20 +293,20 @@ public:
         return;
     }
 
-    ros::Publisher pub_image_track_;
+    auto pub_image_track_;
 
-    ros::Publisher pub_vo_traj_, pub_vo_pose_;
-    visualization_msgs::Marker vo_traj_msg_;
+    auto pub_vo_traj_, pub_vo_pose_;
+    visualization_msgs::msg::Marker vo_traj_msg_;
 
-    ros::Publisher camera_pose_visual_pub_;
+    auto camera_pose_visual_pub_;
     CameraPoseVisualization cameraposevisual_;
 
-    ros::Publisher pub_point_cloud_;
+    auto pub_point_cloud_;
 
-    ros::Publisher pub_kfs_pose_;
+    auto pub_kfs_pose_;
     std::vector<CameraPoseVisualization> vkeyframesposevisual_;
 
-    ros::Publisher pub_kfs_traj_, pub_final_kfs_traj_;
+    auto pub_kfs_traj_, pub_final_kfs_traj_;
 
-    visualization_msgs::Marker kfs_traj_msg_, final_kfs_traj_msg_;
+    visualization_msgs::msg::Marker kfs_traj_msg_, final_kfs_traj_msg_;
 };

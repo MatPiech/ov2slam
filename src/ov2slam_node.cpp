@@ -30,16 +30,16 @@
 #include <mutex>
 #include <queue>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <ros/console.h>
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
 
-#include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/image_encodings.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core.hpp>
@@ -55,22 +55,22 @@ public:
         std::cout << "\nSensors Grabber is created...\n";
     }
 
-    void subLeftImage(const sensor_msgs::ImageConstPtr &image) {
+    void subLeftImage(const sensor_msgs::msg::ImageConstPtr &image) {
         std::lock_guard<std::mutex> lock(img_mutex);
         img0_buf.push(image);
     }
 
-    void subRightImage(const sensor_msgs::ImageConstPtr &image) {
+    void subRightImage(const sensor_msgs::msg::ImageConstPtr &image) {
         std::lock_guard<std::mutex> lock(img_mutex);
         img1_buf.push(image);
     }
 
-    cv::Mat getGrayImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
+    cv::Mat getGrayImageFromMsg(const sensor_msgs::msg::ImageConstPtr &img_msg)
     {
         // Get and prepare images
         cv_bridge::CvImageConstPtr ptr;
         try {    
-            ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
+            ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::msg::image_encodings::MONO8);
         } 
         catch(cv_bridge::Exception &e)
         {
@@ -148,8 +148,8 @@ public:
         std::cout << "\n Bag reader SyncProcess thread is terminating!\n";
     }
 
-    std::queue<sensor_msgs::ImageConstPtr> img0_buf;
-    std::queue<sensor_msgs::ImageConstPtr> img1_buf;
+    std::queue<sensor_msgs::msg::ImageConstPtr> img0_buf;
+    std::queue<sensor_msgs::msg::ImageConstPtr> img1_buf;
     std::mutex img_mutex;
     
     SlamManager *pslam_;
@@ -159,7 +159,7 @@ public:
 int main(int argc, char** argv)
 {
     // Init the node
-    ros::init(argc, argv, "ov2slam_node");
+    rclcpp::init(argc, argv);
 
     if(argc < 2)
     {
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 
     std::cout << "\nLaunching OV²SLAM...\n\n";
 
-    ros::NodeHandle nh("~");
+    auto node = rclcpp::Node::make_shared("ov2slam_node");
 
     // Load the parameters
     std::string parameters_file = argv[1];
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
     std::thread sync_thread(&SensorsGrabber::sync_process, &sb);
 
     // ROS Spin
-    ros::spin();
+    ros::spin(node);
 
     // Request Slam Manager thread to exit
     slam.bexit_required_ = true;
