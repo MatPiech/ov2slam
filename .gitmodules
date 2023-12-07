@@ -4,3 +4,6 @@
 [submodule "thirdparty/Sophus"]
 	path = thirdparty/Sophus
 	url = https://github.com/strasdat/Sophus.git
+[submodule "thirdparty/obindex2"]
+	path = thirdparty/obindex2
+	url = https://github.com/emiliofidalgo/obindex2.git
