@@ -104,3 +104,50 @@ RUN mkdir -p opencv/build && cd opencv/build \
         -D ENABLE_PRECOMPILED_HEADERS=OFF \
         .. \
     && make -j`nproc` install
+
+################
+### OBIndex2 ###
+################
+WORKDIR /ws/src/ov2slam/thirdparty/obindex2
+RUN mkdir build && cd build/ \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" ..\
+    && make -j`nproc`
+
+################
+### iBoW-LCD ###
+################
+WORKDIR /ws/src/ov2slam/thirdparty/ibow_lcd
+RUN mkdir build && cd build/ \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" .. \
+    && make -j`nproc`
+
+##############
+### Sophus ###
+##############
+WORKDIR /ws/src/ov2slam/thirdparty/Sophus
+RUN mkdir build install && cd build/ \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" .. \
+    && make -j`nproc` install
+
+####################
+### Ceres Solver ###
+####################
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        libgoogle-glog-dev \
+        libgflags-dev \
+        libatlas-base-dev \
+        libeigen3-dev  \
+        libsuitesparse-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ws/src/ov2slam/thirdparty/ceres-solver
+RUN mkdir build install && cd build/ \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" -DBUILD_EXAMPLES=OFF \
+    && make -j`nproc` install
+
+###############
+### OV²SLAM ###
+###############
+WORKDIR /ws/
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make
