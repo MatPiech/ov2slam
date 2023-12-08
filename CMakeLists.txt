@@ -59,7 +59,7 @@ find_package(catkin REQUIRED
 # built. Only set the use of iBoW-LCD to true if built.
 set(WITH_IBOW_LCD OFF)
 
-if( EXISTS "${PROJECT_SOURCE_DIR}/Thirdparty/ibow_lcd/build/liblcdetector.so" )
+if( EXISTS "${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so" )
   add_definitions(-DIBOW_LCD)
   set(WITH_IBOW_LCD ON)
   message(STATUS "iBoW-LCD found!  Going to use Loop Closer!")
@@ -101,7 +101,7 @@ if (opengv_FOUND)
 endif (opengv_FOUND)
 
 # Ceres
-find_package(Ceres NO_DEFAULT_PATH PATHS ${PROJECT_SOURCE_DIR}/Thirdparty/ceres-solver/install/)
+find_package(Ceres NO_DEFAULT_PATH PATHS ${PROJECT_SOURCE_DIR}/thirdparty/ceres-solver/install/)
 find_package(Ceres REQUIRED)
 
 if (Ceres_FOUND)
@@ -110,7 +110,7 @@ endif (Ceres_FOUND)
 
 #Sophus
 # First search for a custom build of Sophus within this project
-find_package(Sophus NO_DEFAULT_PATH PATHS ${PROJECT_SOURCE_DIR}/Thirdparty/Sophus/build/)
+find_package(Sophus NO_DEFAULT_PATH PATHS ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/build/)
 find_package(Sophus REQUIRED)
 
 if (Sophus_FOUND)
@@ -124,7 +124,7 @@ catkin_package()
 ###########
 
 ## add backward
-add_subdirectory(Thirdparty/backward-cpp)
+add_subdirectory(thirdparty/backward-cpp)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
@@ -171,14 +171,14 @@ if (WITH_IBOW_LCD)
   target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
-      ${PROJECT_SOURCE_DIR}/Thirdparty/obindex2/lib/include/
-      ${PROJECT_SOURCE_DIR}/Thirdparty/ibow_lcd/include/
+      ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
+      ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
   )
 
   target_link_libraries(
     ${PROJECT_NAME}
       PRIVATE
-        ${PROJECT_SOURCE_DIR}/Thirdparty/ibow_lcd/build/liblcdetector.so
+        ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
   )
 endif (WITH_IBOW_LCD)
 

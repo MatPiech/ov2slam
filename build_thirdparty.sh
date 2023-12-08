@@ -1,50 +1,45 @@
-#!/bin/bash
+#!/bin/sh
 
 echo ""
 echo "Building Obindex2 lib!"
 echo ""
 
-cd Thirdparty/obindex2
+cd thirdparty/obindex2
 
-mkdir build
-cd build/
+mkdir build && cd build/
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j4
+make -j`nproc`
 cd ../../..
 
 echo ""
 echo "Building iBoW-LCD lib!"
 echo ""
 
-cd Thirdparty/ibow_lcd
+cd thirdparty/ibow_lcd
 
-mkdir build
-cd build/
+mkdir build && cd build/
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j4
+make -j`nproc`
 cd ../../..
 
 echo ""
 echo "Building Sophus lib!"
 echo ""
 
-cd Thirdparty/Sophus
+cd thirdparty/Sophus
 
-mkdir build
-mkdir install
-cd build/
+mkdir build install && cd build/
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="../install/"
-make -j4 install
+make -j`nproc` install
 cd ../../..
 
 echo ""
 echo "Building Ceres lib!"
 echo ""
 
-cd Thirdparty/ceres-solver
-mkdir build
-mkdir install
-cd build/
+cd thirdparty/ceres-solver
+
+mkdir build install && cd build/
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" -DBUILD_EXAMPLES=OFF
-make -j4 install
+make -j`nproc` install
 cd ../../..

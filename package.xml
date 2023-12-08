@@ -23,7 +23,7 @@
   <depend> cv_bridge </depend>
   <depend> image_transport </depend>
   <depend> tf </depend> 
-  <depend> pcl_ros</depend>-->
+  <depend> pcl_ros</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->
