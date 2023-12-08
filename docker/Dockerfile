@@ -1,30 +1,106 @@
 ARG ROS_DISTRO=noetic
-ARG BASE_IMAGE=osrf/ros:${ROS_DISTRO}-desktop-full
+ARG BASE_IMAGE=osrf/ros:${ROS_DISTRO}-desktop
 FROM $BASE_IMAGE
-
-# opencv version must be consistent with the version of ROS, 
-# othervize you may need to rebuild image-transport and other ROS packages
-ARG OPENCV_VERSION=4.2.0
-
-
-# set to true if you want to keep opencv and other sources and build files left in the docker
-ARG KEEP_SOURCES=false
-
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ros-${ROS_DISTRO}-pcl-ros ros-${ROS_DISTRO}-image-transport \
-    libgflags-dev libgoogle-glog-dev \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-ADD install_scripts/install_opengv.sh /install_scripts/
-RUN sh /install_scripts/install_opengv.sh "/build_dep" 91f4b19c73450833a40e463ad3648aae80b3a7f3 \
-    && ($KEEP_SOURCES || rm -r /build_dep)
+ADD . /ws/src/ov2slam
 
-ADD install_scripts/install_opencv_dependencies.sh install_scripts/install_opencv.sh /install_scripts/    
-RUN apt-get update \ 
-    && DEBIAN_FRONTEND=noninteractive sh /install_scripts/install_opencv_dependencies.sh \
-    && sh /install_scripts/install_opencv.sh "/build_dep" "$OPENCV_VERSION" \
-    && ($KEEP_SOURCES || rm -r /build_dep) \
+##############
+### OpenGV ###
+##############
+WORKDIR /ws/src/ov2slam/thirdparty/opengv
+RUN mkdir build && cd build \
+    && cmake .. \
+    && make -j`nproc` && make install
+
+##############
+### OpenCV ###
+##############
+# opencv version must be consistent with the version of ROS,
+# othervize you may need to rebuild image-transport and other ROS packages
+ARG OPENCV_VERSION=4.2.0
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        build-essential \
+        cmake \
+        libgtk2.0-dev \
+        pkg-config \
+        libavcodec-dev \
+        libavformat-dev \
+        libswscale-dev \
+        python3-dev \
+        python3-numpy \
+        libtbb2 \
+        libtbb-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libtiff-dev \
+        libdc1394-22-dev \
+        git \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ws/src/ov2slam/thirdparty
+RUN git clone https://github.com/opencv/opencv.git --branch $OPENCV_VERSION --single-branch --depth 1;
+RUN git clone https://github.com/opencv/opencv_contrib.git --branch $OPENCV_VERSION --single-branch --depth 1
+
+RUN mkdir -p opencv/build && cd opencv/build \
+    && cmake -D CMAKE_BUILD_TYPE=RELEASE \
+        -D INSTALL_C_EXAMPLES=OFF \
+        -D INSTALL_PYTHON_EXAMPLES=OFF \
+        -D OPENCV_GENERATE_PKGCONFIG=ON \
+        -D OPENCV_EXTRA_MODULES_PATH="/ws/src/ov2slam/thirdparty/opencv_contrib/modules" \
+        -D BUILD_EXAMPLES=OFF \
+        -D OPENCV_ENABLE_NONFREE=ON \
+        -D WITH_IPP=OFF \
+        -D BUILD_TESTS=OFF \
+        -D BUILD_PERF_TESTS=OFF \
+        -D BUILD_opencv_adas=OFF \
+        -D BUILD_opencv_bgsegm=OFF \
+        -D BUILD_opencv_bioinspired=OFF \
+        -D BUILD_opencv_ccalib=OFF \
+        -D BUILD_opencv_datasets=ON \
+        -D BUILD_opencv_datasettools=OFF \
+        -D BUILD_opencv_face=OFF \
+        -D BUILD_opencv_latentsvm=OFF \
+        -D BUILD_opencv_line_descriptor=OFF \
+        -D BUILD_opencv_matlab=OFF \
+        -D BUILD_opencv_optflow=ON \
+        -D BUILD_opencv_reg=OFF \
+        -D BUILD_opencv_saliency=OFF \
+        -D BUILD_opencv_surface_matching=OFF \
+        -D BUILD_opencv_text=OFF \
+        -D BUILD_opencv_tracking=ON \
+        -D BUILD_opencv_xobjdetect=OFF \
+        -D BUILD_opencv_xphoto=OFF \
+        -D BUILD_opencv_stereo=OFF \
+        -D BUILD_opencv_hdf=OFF \
+        -D BUILD_opencv_cvv=OFF \
+        -D BUILD_opencv_fuzzy=OFF \
+        -D BUILD_opencv_dnn=OFF \
+        -D BUILD_opencv_dnn_objdetect=OFF \
+        -D BUILD_opencv_dnn_superres=OFF \
+        -D BUILD_opencv_dpm=OFF \
+        -D BUILD_opencv_quality=OFF \
+        -D BUILD_opencv_rapid=OFF \
+        -D BUILD_opencv_rgbd=OFF \
+        -D BUILD_opencv_sfm=OFF \
+        -D BUILD_opencv_shape=ON \
+        -D BUILD_opencv_stitching=OFF \
+        -D BUILD_opencv_structured_light=OFF \
+        -D BUILD_opencv_alphamat=OFF \
+        -D BUILD_opencv_aruco=OFF \
+        -D BUILD_opencv_phase_unwrapping=OFF \
+        -D BUILD_opencv_photo=OFF \
+        -D BUILD_opencv_gapi=OFF \
+        -D BUILD_opencv_video=ON \
+        -D BUILD_opencv_ml=ONN \
+        -D BUILD_opencv_python2=OFF \
+        -D WITH_GSTREAMER=OFF \
+        -D ENABLE_PRECOMPILED_HEADERS=OFF \
+        .. \
+    && make -j`nproc` install
