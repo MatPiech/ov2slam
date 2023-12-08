@@ -20,10 +20,6 @@ RUN mkdir build && cd build \
 ##############
 ### OpenCV ###
 ##############
-# opencv version must be consistent with the version of ROS,
-# othervize you may need to rebuild image-transport and other ROS packages
-ARG OPENCV_VERSION=4.2.0
-
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         build-essential \
@@ -41,14 +37,10 @@ RUN apt-get update \
         libpng-dev \
         libtiff-dev \
         libdc1394-22-dev \
-        git \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /ws/src/ov2slam/thirdparty
-RUN git clone https://github.com/opencv/opencv.git --branch $OPENCV_VERSION --single-branch --depth 1;
-RUN git clone https://github.com/opencv/opencv_contrib.git --branch $OPENCV_VERSION --single-branch --depth 1
-
-RUN mkdir -p opencv/build opencv/install && cd opencv/build \
+WORKDIR /ws/src/ov2slam/thirdparty/opencv
+RUN mkdir build install && cd build \
     && cmake .. -D CMAKE_BUILD_TYPE=RELEASE \
         -D INSTALL_C_EXAMPLES=OFF \
         -D INSTALL_PYTHON_EXAMPLES=OFF \

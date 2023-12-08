@@ -5,18 +5,13 @@
 ##############
 echo -e "\nBuilding OpenCV lib...\n"
 
-OPENCV_VERSION=4.2.0
-
-cd thirdparty
-git clone https://github.com/opencv/opencv.git --branch $OPENCV_VERSION --single-branch --depth 1
-git clone https://github.com/opencv/opencv_contrib.git --branch $OPENCV_VERSION --single-branch --depth 1
-
-mkdir -p opencv/build && cd opencv/build
+cd thirdparty/opencv
+mkdir build install && cd build
 cmake .. -D CMAKE_BUILD_TYPE=RELEASE \
     -D INSTALL_C_EXAMPLES=OFF \
     -D INSTALL_PYTHON_EXAMPLES=OFF \
     -D OPENCV_GENERATE_PKGCONFIG=ON \
-    -D OPENCV_EXTRA_MODULES_PATH="/ws/src/ov2slam/thirdparty/opencv_contrib/modules" \
+    -D OPENCV_EXTRA_MODULES_PATH="../../opencv_contrib/modules" \
     -D BUILD_EXAMPLES=OFF \
     -D OPENCV_ENABLE_NONFREE=ON \
     -D WITH_IPP=OFF \
@@ -64,7 +59,8 @@ cmake .. -D CMAKE_BUILD_TYPE=RELEASE \
     -D BUILD_opencv_ml=ONN \
     -D BUILD_opencv_python2=OFF \
     -D WITH_GSTREAMER=OFF \
-    -D ENABLE_PRECOMPILED_HEADERS=OFF
+    -D ENABLE_PRECOMPILED_HEADERS=OFF \
+    -D CMAKE_INSTALL_PREFIX="../install/"
 make -j`nproc` install
 cd ../../..
 
