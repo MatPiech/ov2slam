@@ -14,7 +14,7 @@ ADD . /ws/src/ov2slam
 ##############
 WORKDIR /ws/src/ov2slam/thirdparty/opengv
 RUN mkdir build && cd build \
-    && cmake .. \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
     && make -j`nproc` && make install
 
 ##############
@@ -48,8 +48,8 @@ WORKDIR /ws/src/ov2slam/thirdparty
 RUN git clone https://github.com/opencv/opencv.git --branch $OPENCV_VERSION --single-branch --depth 1;
 RUN git clone https://github.com/opencv/opencv_contrib.git --branch $OPENCV_VERSION --single-branch --depth 1
 
-RUN mkdir -p opencv/build && cd opencv/build \
-    && cmake -D CMAKE_BUILD_TYPE=RELEASE \
+RUN mkdir -p opencv/build opencv/install && cd opencv/build \
+    && cmake .. -D CMAKE_BUILD_TYPE=RELEASE \
         -D INSTALL_C_EXAMPLES=OFF \
         -D INSTALL_PYTHON_EXAMPLES=OFF \
         -D OPENCV_GENERATE_PKGCONFIG=ON \
@@ -102,7 +102,7 @@ RUN mkdir -p opencv/build && cd opencv/build \
         -D BUILD_opencv_python2=OFF \
         -D WITH_GSTREAMER=OFF \
         -D ENABLE_PRECOMPILED_HEADERS=OFF \
-        .. \
+        -D CMAKE_INSTALL_PREFIX="../install/" \
     && make -j`nproc` install
 
 ################
@@ -110,7 +110,7 @@ RUN mkdir -p opencv/build && cd opencv/build \
 ################
 WORKDIR /ws/src/ov2slam/thirdparty/obindex2
 RUN mkdir build && cd build/ \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" ..\
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
     && make -j`nproc`
 
 ################
@@ -118,7 +118,7 @@ RUN mkdir build && cd build/ \
 ################
 WORKDIR /ws/src/ov2slam/thirdparty/ibow_lcd
 RUN mkdir build && cd build/ \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" .. \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
     && make -j`nproc`
 
 ##############
@@ -126,7 +126,7 @@ RUN mkdir build && cd build/ \
 ##############
 WORKDIR /ws/src/ov2slam/thirdparty/Sophus
 RUN mkdir build install && cd build/ \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" .. \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" \
     && make -j`nproc` install
 
 ####################
@@ -149,5 +149,5 @@ RUN mkdir build install && cd build/ \
 ###############
 ### OV²SLAM ###
 ###############
-WORKDIR /ws/
+WORKDIR /ws
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make

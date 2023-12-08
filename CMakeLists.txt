@@ -70,6 +70,7 @@ endif ( )
 ## System dependencies are found with CMake's conventions
 
 # OpenCV
+find_package(OpenCV NO_DEFAULT_PATH PATHS ${PROJECT_SOURCE_DIR}/thirdparty/opencv/install/)
 find_package(OpenCV REQUIRED)
 
 if(OpenCV_VERSION_MAJOR LESS 3)
