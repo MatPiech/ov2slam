@@ -31,14 +31,13 @@
 #include <queue>
 
 #include <rclcpp/rclcpp.hpp>
-#include <ros/console.h>
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
 
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/image_encodings.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 
 #include <cv_bridge/cv_bridge.h>
@@ -74,7 +73,7 @@ public:
         } 
         catch(cv_bridge::Exception &e)
         {
-            ROS_ERROR("\n\n\ncv_bridge exeception: %s\n\n\n", e.what());
+            RCLCPP_ERROR("\n\n\ncv_bridge exeception: %s\n\n\n", e.what());
         }
 
         return ptr->image;
