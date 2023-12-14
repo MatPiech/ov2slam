@@ -31,6 +31,7 @@
 #include <queue>
 
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
@@ -54,26 +55,26 @@ public:
         std::cout << "\nSensors Grabber is created...\n";
     }
 
-    void subLeftImage(const sensor_msgs::msg::ImageConstPtr &image) {
+    void subLeftImage(const sensor_msgs::msg::Image &image) {
         std::lock_guard<std::mutex> lock(img_mutex);
         img0_buf.push(image);
     }
 
-    void subRightImage(const sensor_msgs::msg::ImageConstPtr &image) {
+    void subRightImage(const sensor_msgs::msg::Image &image) {
         std::lock_guard<std::mutex> lock(img_mutex);
         img1_buf.push(image);
     }
 
-    cv::Mat getGrayImageFromMsg(const sensor_msgs::msg::ImageConstPtr &img_msg)
+    cv::Mat getGrayImageFromMsg(const sensor_msgs::msg::Image &img_msg)
     {
         // Get and prepare images
         cv_bridge::CvImageConstPtr ptr;
         try {    
-            ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::msg::image_encodings::MONO8);
+            ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
         } 
         catch(cv_bridge::Exception &e)
         {
-            RCLCPP_ERROR("\n\n\ncv_bridge exeception: %s\n\n\n", e.what());
+            RCLCPP_ERROR(rclcpp::get_logger("cv_bridge_logger"), "\n\n\ncv_bridge exeception: %s\n\n\n", e.what());
         }
 
         return ptr->image;
@@ -95,8 +96,8 @@ public:
 
                 if (!img0_buf.empty() && !img1_buf.empty())
                 {
-                    double time0 = img0_buf.front()->header.stamp.toSec();
-                    double time1 = img1_buf.front()->header.stamp.toSec();
+                    double time0 = img0_buf.front().header.stamp.sec;
+                    double time1 = img1_buf.front().header.stamp.sec;
 
                     // sync tolerance
                     if(time0 < time1 - 0.015)
@@ -130,7 +131,7 @@ public:
 
                 if ( !img0_buf.empty() )
                 {
-                    double time = img0_buf.front()->header.stamp.toSec();
+                    double time = img0_buf.front().header.stamp.sec;
                     image0 = getGrayImageFromMsg(img0_buf.front());
                     img0_buf.pop();
 
@@ -147,8 +148,8 @@ public:
         std::cout << "\n Bag reader SyncProcess thread is terminating!\n";
     }
 
-    std::queue<sensor_msgs::msg::ImageConstPtr> img0_buf;
-    std::queue<sensor_msgs::msg::ImageConstPtr> img1_buf;
+    std::queue<sensor_msgs::msg::Image> img0_buf;
+    std::queue<sensor_msgs::msg::Image> img1_buf;
     std::mutex img_mutex;
     
     SlamManager *pslam_;
@@ -188,7 +189,7 @@ int main(int argc, char** argv)
 
     // Create the ROS Visualizer
     std::shared_ptr<RosVisualizer> prosviz;
-    prosviz.reset( new RosVisualizer(nh) );
+    prosviz.reset( new RosVisualizer(node) );
 
     // Setting up the SLAM Manager
     SlamManager slam(pparams, prosviz);
@@ -207,7 +208,7 @@ int main(int argc, char** argv)
     std::thread sync_thread(&SensorsGrabber::sync_process, &sb);
 
     // ROS Spin
-    ros::spin(node);
+    rclcpp::spin(node);
 
     // Request Slam Manager thread to exit
     slam.bexit_required_ = true;
