@@ -110,14 +110,26 @@ find_package(pcl_ros REQUIRED)
 ## Build ##
 ###########
 
+## add backward
+add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/backward-cpp)
+
 include_directories(
   include
+  ${PROJECT_SOURCE_DIR}/include/
+  ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
+  ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
+  ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+)
+
+link_libraries(
+  ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
 )
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp ${BACKWARD_ENABLE})
+add_backward(${PROJECT_NAME}_node)
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
   image_transport

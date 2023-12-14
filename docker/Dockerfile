@@ -12,7 +12,7 @@ RUN apt update \
     python3-colcon-common-extensions build-essential cmake pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-ADD . /ws/src/ov2slam
+ADD ./thirdparty /ws/src/ov2slam/thirdparty
 
 ##############
 ### Eigen3 ###
@@ -107,27 +107,6 @@ RUN mkdir build install && cd build \
         -D ENABLE_PRECOMPILED_HEADERS=OFF \
     && make -j`nproc` install
 
-################
-### OBIndex2 ###
-################
-RUN apt update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        libboost-system-dev libboost-filesystem-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /ws/src/ov2slam/thirdparty/obindex2
-RUN mkdir build && cd build/ \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j`nproc`
-
-################
-### iBoW-LCD ###
-################
-WORKDIR /ws/src/ov2slam/thirdparty/ibow_lcd
-RUN mkdir build && cd build/ \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j`nproc`
-
 ##############
 ### Sophus ###
 ##############
@@ -159,6 +138,29 @@ RUN mkdir build install && cd build/ \
         -DEigen3_DIR=/usr/local/share/eigen3/cmake \
     && make -j8 install
 
+ADD . /ws/src/ov2slam
+
+################
+### OBIndex2 ###
+################
+RUN apt update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        libboost-system-dev libboost-filesystem-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ws/src/ov2slam/thirdparty/obindex2
+RUN mkdir build && cd build/ \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
+    && make -j`nproc`
+
+################
+### iBoW-LCD ###
+################
+WORKDIR /ws/src/ov2slam/thirdparty/ibow_lcd
+RUN mkdir build && cd build/ \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
+    && make -j`nproc`
+
 ###############
 ### OV²SLAM ###
 ###############
@@ -171,6 +173,7 @@ RUN apt update \
         ros-${ROS_DISTRO}-tf2 \
         ros-${ROS_DISTRO}-tf2-geometry-msgs \
         git \
+        vim \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ws/src
