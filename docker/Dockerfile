@@ -177,8 +177,7 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ws/src
-# RUN git clone https://github.com/ros-perception/perception_pcl.git -b ros2
-RUN git clone https://github.com/ShepelIlya/perception_pcl.git -b ros2
+RUN git clone https://github.com/MatPiech/perception_pcl.git -b ros2
 
 WORKDIR /ws
 RUN . /opt/ros/$ROS_DISTRO/setup.sh
