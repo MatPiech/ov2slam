@@ -222,7 +222,7 @@ void SlamManager::run()
                 writeResults();
 
                 // Notify exit to ROS
-                ros::requestShutdown();
+                rclcpp::shutdown()
             }
             else {
                 std::chrono::milliseconds dura(1);

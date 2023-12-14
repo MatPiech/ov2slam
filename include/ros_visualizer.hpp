@@ -35,7 +35,7 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/point_cloud.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/image_encodings.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 
@@ -48,9 +48,11 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include <visualization_msgs/msg/marker.hpp>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-#include <pcl_ros/point_cloud.h>
+#include <pcl_ros/point_cloud.hpp>
 
 #include <sophus/se3.hpp>
 
@@ -63,7 +65,7 @@ class RosVisualizer {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
-    RosVisualizer(ros::NodeHandle &n)
+    RosVisualizer(std::shared_ptr<rclcpp::Node> &n)
         : cameraposevisual_(1, 0, 0, 1)
     {
         std::cout << "\nROS visualizer is being created...\n";
@@ -105,15 +107,15 @@ public:
 
     void pubTrackImage(const cv::Mat &imgTrack, const double time)
     {
-        if( pub_image_track_.getNumSubscribers() == 0 ) {
+        if( pub_image_track_->get_subscription_count() == 0 ) {
             return;
         }
 
         std_msgs::msg::Header header;
         header.frame_id = "world";
         header.stamp = rclcpp::Time(time);
-        sensor_msgs::msg::ImagePtr imgTrackMsg = cv_bridge::CvImage(header, "rgb8", imgTrack).toImageMsg();
-        pub_image_track_.publish(imgTrackMsg);
+        sensor_msgs::msg::Image::SharedPtr imgTrackMsg = cv_bridge::CvImage(header, "rgb8", imgTrack).toImageMsg();
+        pub_image_track_->publish(*imgTrackMsg);
     }
 
     void pubVO(const Sophus::SE3d &Twc, const double time)
@@ -137,7 +139,7 @@ public:
 
         vo_traj_msg_.points.push_back(p);
 
-        pub_vo_traj_.publish(vo_traj_msg_);
+        pub_vo_traj_->publish(vo_traj_msg_);
 
         // 2. Publish Pose Stamped + tf
         // ============================
@@ -153,15 +155,23 @@ public:
 
         Twc_msg.header = vo_traj_msg_.header;
 
-        pub_vo_pose_.publish(Twc_msg);
+        pub_vo_pose_->publish(Twc_msg);
 
-        tf2::Transform transform;
-        transform.setOrigin(tf2::Vector3(p.x, p.y, p.z));
-        tf2::Quaternion qtf(q.x, q.y, q.z, q.w);
-        transform.setRotation(qtf);
+        geometry_msgs::msg::TransformStamped t;
+        t.header.stamp = rclcpp::Time(time);
+        t.header.frame_id = "world";
+        t.child_frame_id = "camera";
 
-        static tf2::TransformBroadcaster br;
-        br.sendTransform(tf2::StampedTransform(transform, rclcpp::Time(time), "world", "camera"));
+        t.transform.translation.x = p.x;
+        t.transform.translation.y = p.y;
+        t.transform.translation.z = p.z;
+
+        t.transform.rotation.x = q.x;
+        t.transform.rotation.y = q.y;
+        t.transform.rotation.z = q.z;
+        t.transform.rotation.w = q.w;
+
+        tf_broadcaster_->sendTransform(t);
 
         // 3. Publish camera visual
         // =========================
@@ -205,7 +215,7 @@ public:
 
     void pubVisualKFs(const double time) 
     {
-        if( pub_kfs_pose_.getNumSubscribers() == 0 ) {
+        if( pub_kfs_pose_->get_subscription_count() == 0 ) {
             return;
         }
 
@@ -228,14 +238,14 @@ public:
             j++;
         }
 
-        pub_kfs_pose_.publish(markerArray_msg);
+        pub_kfs_pose_->publish(markerArray_msg);
 
         vkeyframesposevisual_.clear();
     }
 
     void pubPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud, const double time) 
     {
-        if( pub_point_cloud_.getNumSubscribers() == 0 ) {
+        if( pub_point_cloud_->get_subscription_count() == 0 ) {
             return;
         }
 
@@ -244,7 +254,7 @@ public:
         header.stamp = rclcpp::Time(time);
 
         pcloud->header = pcl_conversions::toPCL(header);
-        pub_point_cloud_.publish(pcloud);
+        pub_point_cloud_->publish(pcloud);
     }
 
     void addKFsTraj(const Sophus::SE3d &Twc)
@@ -263,19 +273,19 @@ public:
 
     void pubKFsTraj(const double time)
     {   
-        if( pub_kfs_traj_.getNumSubscribers() == 0 ) {
+        if( pub_kfs_traj_->get_subscription_count() == 0 ) {
             return;
         }
 
         kfs_traj_msg_.header.stamp = rclcpp::Time(time);
         kfs_traj_msg_.header.frame_id = "world";
 
-        pub_kfs_traj_.publish(kfs_traj_msg_);
+        pub_kfs_traj_->publish(kfs_traj_msg_);
     }
 
     void pubFinalKFsTraj(const Sophus::SE3d &Twc, const double time)
     {   
-        if( pub_final_kfs_traj_.getNumSubscribers() == 0 ) {
+        if( pub_final_kfs_traj_->get_subscription_count() == 0 ) {
             return;
         }
 
@@ -288,25 +298,28 @@ public:
 
         final_kfs_traj_msg_.points.push_back(p);
 
-        pub_final_kfs_traj_.publish(final_kfs_traj_msg_);
+        pub_final_kfs_traj_->publish(final_kfs_traj_msg_);
 
         return;
     }
 
-    auto pub_image_track_;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_image_track_;
 
-    auto pub_vo_traj_, pub_vo_pose_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_vo_traj_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_vo_pose_;
     visualization_msgs::msg::Marker vo_traj_msg_;
 
-    auto camera_pose_visual_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr camera_pose_visual_pub_;
     CameraPoseVisualization cameraposevisual_;
 
-    auto pub_point_cloud_;
+    rclcpp::Publisher<pcl::PointCloud<pcl::PointXYZRGB>>::SharedPtr pub_point_cloud_;
 
-    auto pub_kfs_pose_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_kfs_pose_;
     std::vector<CameraPoseVisualization> vkeyframesposevisual_;
 
-    auto pub_kfs_traj_, pub_final_kfs_traj_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_kfs_traj_, pub_final_kfs_traj_;
 
     visualization_msgs::msg::Marker kfs_traj_msg_, final_kfs_traj_msg_;
+
+    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };

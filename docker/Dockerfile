@@ -1,13 +1,28 @@
-ARG ROS_DISTRO=noetic
-ARG BASE_IMAGE=osrf/ros:${ROS_DISTRO}-desktop
+ARG ROS_DISTRO=humble
+ARG BASE_IMAGE=amd64/ros:${ROS_DISTRO}-ros-core
 FROM $BASE_IMAGE
 
 RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y curl \
+    && sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list' \
+    && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+
+RUN apt update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ros-${ROS_DISTRO}-pcl-ros ros-${ROS_DISTRO}-image-transport \
+    python3-colcon-common-extensions build-essential cmake pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-ADD . /ws/src/ov2slam
+ADD ./thirdparty /ws/src/ov2slam/thirdparty
+
+##############
+### Eigen3 ###
+##############
+WORKDIR /ws/src/ov2slam/thirdparty/eigen
+RUN mkdir build && cd build/ \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
+    && make -j`nproc` install \
+    && ln -s /usr/local/include/eigen3/Eigen /usr/local/include/Eigen \
+    && rm -rf /usr/include/eigen3
 
 ##############
 ### OpenGV ###
@@ -15,17 +30,14 @@ ADD . /ws/src/ov2slam
 WORKDIR /ws/src/ov2slam/thirdparty/opengv
 RUN mkdir build && cd build \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j`nproc` && make install
+    && make -j`nproc` install
 
 ##############
 ### OpenCV ###
 ##############
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        build-essential \
-        cmake \
         libgtk2.0-dev \
-        pkg-config \
         libavcodec-dev \
         libavformat-dev \
         libswscale-dev \
@@ -36,7 +48,6 @@ RUN apt-get update \
         libjpeg-dev \
         libpng-dev \
         libtiff-dev \
-        libdc1394-22-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ws/src/ov2slam/thirdparty/opencv
@@ -94,12 +105,49 @@ RUN mkdir build install && cd build \
         -D BUILD_opencv_python2=OFF \
         -D WITH_GSTREAMER=OFF \
         -D ENABLE_PRECOMPILED_HEADERS=OFF \
-        -D CMAKE_INSTALL_PREFIX="../install/" \
     && make -j`nproc` install
+
+##############
+### Sophus ###
+##############
+WORKDIR /ws/src/ov2slam/thirdparty/Sophus
+RUN mkdir build install && cd build/ \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_STANDARD=14 \
+        -DCMAKE_CXX_FLAGS="-march=native" \
+        -DBUILD_EXAMPLES=OFF \
+        -DEigen3_DIR=/usr/local/share/eigen3/cmake \
+    && make -j8 install
+
+####################
+### Ceres Solver ###
+####################
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        libgoogle-glog-dev \
+        libgflags-dev \
+        libatlas-base-dev \
+        libsuitesparse-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ws/src/ov2slam/thirdparty/ceres-solver
+RUN mkdir build install && cd build/ \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_STANDARD=14 \
+        -DCMAKE_CXX_FLAGS="-march=native" \
+        -DEigen3_DIR=/usr/local/share/eigen3/cmake \
+    && make -j8 install
+
+ADD . /ws/src/ov2slam
 
 ################
 ### OBIndex2 ###
 ################
+RUN apt update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        libboost-system-dev libboost-filesystem-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /ws/src/ov2slam/thirdparty/obindex2
 RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
@@ -113,33 +161,23 @@ RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
     && make -j`nproc`
 
-##############
-### Sophus ###
-##############
-WORKDIR /ws/src/ov2slam/thirdparty/Sophus
-RUN mkdir build install && cd build/ \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" \
-    && make -j`nproc` install
-
-####################
-### Ceres Solver ###
-####################
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        libgoogle-glog-dev \
-        libgflags-dev \
-        libatlas-base-dev \
-        libeigen3-dev  \
-        libsuitesparse-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /ws/src/ov2slam/thirdparty/ceres-solver
-RUN mkdir build install && cd build/ \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" -DBUILD_EXAMPLES=OFF \
-    && make -j`nproc` install
-
 ###############
 ### OV²SLAM ###
 ###############
+RUN apt update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        ros-${ROS_DISTRO}-image-transport \
+        ros-${ROS_DISTRO}-cv-bridge \
+        libpcl-dev \
+        ros-${ROS_DISTRO}-pcl-msgs \
+        ros-${ROS_DISTRO}-tf2 \
+        ros-${ROS_DISTRO}-tf2-geometry-msgs \
+        git \
+        vim \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ws/src
+RUN git clone https://github.com/MatPiech/perception_pcl.git -b ros2
+
 WORKDIR /ws
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && catkin_make
+RUN . /opt/ros/$ROS_DISTRO/setup.sh
