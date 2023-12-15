@@ -138,10 +138,10 @@ void SlamManager::run()
 
             // Update cam delay for automatic exit
             if( frame_id_ > 0 ) {
-                cam_delay = rclcpp::Time::now().toSec() - last_img_time;
+                cam_delay = rclcpp::Clock().now().seconds() - last_img_time;
                 last_img_time += cam_delay;
             } else {
-                last_img_time = rclcpp::Time::now().toSec();
+                last_img_time = rclcpp::Clock().now().seconds();
             }
 
             // Display info on current frame state
@@ -207,7 +207,7 @@ void SlamManager::run()
             // 3. Check if we are done with a sequence!
             // ========================================
             bool c1 = cam_delay > 0;
-            bool c2 = ( rclcpp::Time::now().toSec() - last_img_time ) > 100. * cam_delay;
+            bool c2 = ( rclcpp::Clock().now().seconds() - last_img_time ) > 100. * cam_delay;
             bool c3 = !bnew_img_available_;
 
             if( c1 && c2 && c3 )
@@ -222,7 +222,7 @@ void SlamManager::run()
                 writeResults();
 
                 // Notify exit to ROS
-                rclcpp::shutdown()
+                rclcpp::shutdown();
             }
             else {
                 std::chrono::milliseconds dura(1);
@@ -482,7 +482,7 @@ void SlamManager::visualizeAtKFsRate(const double time)
 
 void SlamManager::visualizeFrame(const cv::Mat &imleft, const double time)
 {
-    if( prosviz_->pub_image_track_.getNumSubscribers() == 0 ) {
+    if( prosviz_->pub_image_track_->get_subscription_count() == 0 ) {
         return;
     }
 
@@ -520,7 +520,7 @@ void SlamManager::visualizeVOTraj(const double time)
 
 void SlamManager::visualizeCovisibleKFs(const double time)
 {
-    if( prosviz_->pub_kfs_pose_.getNumSubscribers() == 0 ) {
+    if( prosviz_->pub_kfs_pose_->get_subscription_count() == 0 ) {
         return;
     }
 
@@ -537,7 +537,7 @@ void SlamManager::visualizeCovisibleKFs(const double time)
 
 void SlamManager::visualizeFullKFsTraj(const double time)
 {
-    if( prosviz_->pub_kfs_traj_.getNumSubscribers() == 0 ) {
+    if( prosviz_->pub_kfs_traj_->get_subscription_count() == 0 ) {
             return;
     }
 
@@ -554,7 +554,7 @@ void SlamManager::visualizeFullKFsTraj(const double time)
 
 void SlamManager::visualizeFinalKFsTraj()
 {
-    if( prosviz_->pub_final_kfs_traj_.getNumSubscribers() == 0 ) {
+    if( prosviz_->pub_final_kfs_traj_->get_subscription_count() == 0 ) {
         return;
     }
 
@@ -600,7 +600,7 @@ void SlamManager::writeResults()
         std::lock_guard<std::mutex> lock(pmap_->map_mutex_);
         pmapper_->runFullBA();
 
-        prosviz_->pubPointCloud(pmap_->pcloud_, rclcpp::Time::now().toSec());
+        prosviz_->pubPointCloud(pmap_->pcloud_, rclcpp::Clock().now().seconds());
         visualizeFinalKFsTraj();
 
         for( const auto & kfid_pkf : pmap_->map_pkfs_ ) {

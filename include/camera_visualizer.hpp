@@ -53,7 +53,16 @@ public:
 	void add_pose(const Eigen::Vector3d& p, const Eigen::Quaterniond& q);
 	void reset();
 
-	void publish_by(auto& pub, const std_msgs::msg::Header& header);
+	void publish_by(auto& pub, const std_msgs::msg::Header& header){
+		visualization_msgs::msg::MarkerArray markerArray_msg;
+
+		for(auto& marker : m_markers) {
+			marker.header = header;
+			markerArray_msg.markers.push_back(marker);
+		}
+
+		pub->publish(markerArray_msg);
+	}
 
 	void add_edge(const Eigen::Vector3d& p0, const Eigen::Vector3d& p1);
 	void add_loopedge(const Eigen::Vector3d& p0, const Eigen::Vector3d& p1);

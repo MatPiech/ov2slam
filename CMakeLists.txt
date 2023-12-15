@@ -13,6 +13,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 set(CMAKE_BUILD_TYPE "Release")
+#######
+# NOTE!
+#######
+# You might need to remove the -march=native if you experience
+# exceptions related to ceres or opengv.
+# opengv comes natively with the march=native option while
+# ceres requires to specify it at build time.
+# If you experience exceptions you can either re-compile
+# opengv and ov2slam without -march=native or re-compile
+# ceres with it
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -march=native -g")
 
 #######
 # NOTE!
@@ -75,21 +86,6 @@ if (Sophus_FOUND)
   message(STATUS "Found Sophus lib : ${Sophus_VERSION} - ${Sophus_DIR}")
 endif (Sophus_FOUND)
 
-find_package(eigen3_cmake_module PATHS /usr/local/share/eigen3_cmake_module/cmake NO_DEFAULT_PATH)
-
-#######
-# NOTE!
-#######
-# You might need to remove the -march=native if you experience
-# exceptions related to ceres or opengv.
-# opengv comes natively with the march=native option while
-# ceres requires to specify it at build time.
-# If you experience exceptions you can either re-compile
-# opengv and ov2slam without -march=native or re-compile
-# ceres with it
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -march=native -g")
-
-
 ###################
 ## Find packages ##
 ###################
@@ -105,30 +101,68 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(pcl_ros REQUIRED)
 
-
 ###########
 ## Build ##
 ###########
 
 ## add backward
-add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/backward-cpp)
+add_subdirectory(thirdparty/backward-cpp)
 
-include_directories(
-  include
-  ${PROJECT_SOURCE_DIR}/include/
-  ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
-  ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-  ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+## Declare a C++ library
+add_library(${PROJECT_NAME} SHARED
+  src/ov2slam.cpp
+  src/camera_visualizer.cpp
+  src/visual_front_end.cpp
+  src/frame.cpp
+  src/slam_params.cpp
+  src/camera_calibration.cpp
+  src/feature_extractor.cpp
+  src/feature_tracker.cpp
+  src/map_manager.cpp
+  src/map_point.cpp
+  src/mapper.cpp
+  src/multi_view_geometry.cpp
+  src/ceres_parametrization.cpp
+  src/optimizer.cpp
+  src/estimator.cpp
+  src/loop_closer.cpp
 )
 
-link_libraries(
-  ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
+# Add mandatory dependencies
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    ${rclcpp_INCLUDE_DIRS}
+    ${std_msgs_INCLUDE_DIRS}
+    ${nav_msgs_INCLUDE_DIRS}
+    ${visualization_msgs_INCLUDE_DIRS}
+    ${pcl_ros_INCLUDE_DIRS}
+    /opt/ros/humble/include/cv_bridge
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/
+    ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
+    ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+)
+
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+    ${rclcpp_LIBRARIES}
+    ${std_msgs_LIBRARIES}
+    ${visualization_msgs_LIBRARIES}
+    ${pcl_ros_LIBRARIES}
+    Eigen3::Eigen
+    Sophus::Sophus
+    Ceres::ceres
+    opengv
+    ${OpenCV_LIBRARIES}
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
 )
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp ${BACKWARD_ENABLE})
+add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp  ${BACKWARD_ENABLE})
 add_backward(${PROJECT_NAME}_node)
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
@@ -143,8 +177,25 @@ ament_target_dependencies(${PROJECT_NAME}_node
   pcl_ros
 )
 
+# Add mandatory dependencies
+target_include_directories(${PROJECT_NAME}_node
+  PUBLIC
+    ${cv_bridge_INCLUDE_DIRS}
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/
+    ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
+    ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}_node
+  ${PROJECT_NAME}
+)
+
 install(TARGETS
   ${PROJECT_NAME}_node
+  ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 
