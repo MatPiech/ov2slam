@@ -169,15 +169,13 @@ RUN apt update \
         ros-${ROS_DISTRO}-image-transport \
         ros-${ROS_DISTRO}-cv-bridge \
         libpcl-dev \
+        ros-${ROS_DISTRO}-pcl-ros \
         ros-${ROS_DISTRO}-pcl-msgs \
+        ros-${ROS_DISTRO}-pcl-conversions \
         ros-${ROS_DISTRO}-tf2 \
         ros-${ROS_DISTRO}-tf2-geometry-msgs \
-        git \
         vim \
     && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /ws/src
-RUN git clone https://github.com/MatPiech/perception_pcl.git -b ros2
 
 WORKDIR /ws
 RUN . /opt/ros/$ROS_DISTRO/setup.sh
