@@ -52,7 +52,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-#include <pcl_ros/point_cloud.hpp>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <sophus/se3.hpp>
 
@@ -87,7 +87,7 @@ public:
         cameraposevisual_.setScale(0.1);
         cameraposevisual_.setLineWidth(0.01);
 
-        pub_point_cloud_ = n->create_publisher<pcl::PointCloud<pcl::PointXYZRGB>>("point_cloud", 1000);
+        pub_point_cloud_ = n->create_publisher<sensor_msgs::msg::PointCloud2>("point_cloud", 1000);
         
         pub_kfs_traj_ = n->create_publisher<visualization_msgs::msg::Marker>("kfs_traj", 1000);
         pub_kfs_pose_ = n->create_publisher<visualization_msgs::msg::MarkerArray>("local_kfs_window", 1000);
@@ -243,18 +243,16 @@ public:
         vkeyframesposevisual_.clear();
     }
 
-    void pubPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud, const double time) 
+    void pubPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcloud, const double time)
     {
         if( pub_point_cloud_->get_subscription_count() == 0 ) {
             return;
         }
 
-        std_msgs::msg::Header header;
-        header.frame_id = "world";
-        header.stamp = rclcpp::Time(time);
-
-        pcloud->header = pcl_conversions::toPCL(header);
-        pub_point_cloud_->publish(pcloud);
+        pcl::toROSMsg(*pcloud, *pc2_msg_);
+        pc2_msg_->header.frame_id = "map";
+        pc2_msg_->header.stamp = rclcpp::Time(time);
+        pub_point_cloud_->publish(*pc2_msg_);
     }
 
     void addKFsTraj(const Sophus::SE3d &Twc)
@@ -312,7 +310,8 @@ public:
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr camera_pose_visual_pub_;
     CameraPoseVisualization cameraposevisual_;
 
-    rclcpp::Publisher<pcl::PointCloud<pcl::PointXYZRGB>>::SharedPtr pub_point_cloud_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_point_cloud_;
+    sensor_msgs::msg::PointCloud2::Ptr pc2_msg_;
 
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_kfs_pose_;
     std::vector<CameraPoseVisualization> vkeyframesposevisual_;
