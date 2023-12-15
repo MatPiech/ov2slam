@@ -311,7 +311,7 @@ public:
     CameraPoseVisualization cameraposevisual_;
 
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_point_cloud_;
-    sensor_msgs::msg::PointCloud2::Ptr pc2_msg_;
+    sensor_msgs::msg::PointCloud2::SharedPtr pc2_msg_;
 
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_kfs_pose_;
     std::vector<CameraPoseVisualization> vkeyframesposevisual_;
