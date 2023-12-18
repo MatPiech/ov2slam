@@ -117,7 +117,7 @@ RUN mkdir build install && cd build/ \
         -DCMAKE_CXX_FLAGS="-march=native" \
         -DBUILD_EXAMPLES=OFF \
         -DEigen3_DIR=/usr/local/share/eigen3/cmake \
-    && make -j8 install
+    && make -j`nproc` install
 
 ####################
 ### Ceres Solver ###
@@ -132,11 +132,8 @@ RUN apt-get update \
 
 WORKDIR /ws/src/ov2slam/thirdparty/ceres-solver
 RUN mkdir build install && cd build/ \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=14 \
-        -DCMAKE_CXX_FLAGS="-march=native" \
-        -DEigen3_DIR=/usr/local/share/eigen3/cmake \
-    && make -j8 install
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
+    && make -j`nproc` install
 
 ADD . /ws/src/ov2slam
 

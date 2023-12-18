@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.22)
 project(ov2slam)
 
 if(POLICY CMP0022)
@@ -6,7 +6,7 @@ if(POLICY CMP0022)
 endif()
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -25,36 +25,28 @@ set(CMAKE_BUILD_TYPE "Release")
 # ceres with it
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -march=native -g")
 
-#######
-# NOTE!
-#######
-# Set to OFF if you did not compile OpenCV w. opencv_contrib
-set(WITH_OPENCV_CONTRIB ON)
-
-if(WITH_OPENCV_CONTRIB)
-    message("\nGoing to use OpenCV contrib! (WITH_OPENCV_CONTRIB is set to : ${WITH_OPENCV_CONTRIB}.
-Set it to OFF is OpenCV was not compiled with the opencv_contrib modules)\n")
-    add_definitions(-DOPENCV_CONTRIB)
-endif()
-
 # iBOW-LCD
 # First check if the related thridparty libs have been
 # built. Only set the use of iBoW-LCD to true if built.
-set(WITH_IBOW_LCD OFF)
-
+set(WITH_IBOW_LCD ON)
 if( EXISTS "${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so" )
   add_definitions(-DIBOW_LCD)
-  set(WITH_IBOW_LCD ON)
   message(STATUS "iBoW-LCD found!  Going to use Loop Closer!")
 else ( )
+  set(WITH_IBOW_LCD OFF)
   message(STATUS "iBoW-LCD NOT found!  Loop Closer will not be enabled!")
 endif ( )
 
 # OpenCV
+set(WITH_OPENCV_CONTRIB ON)
 find_package(OpenCV REQUIRED)
 
 if (OpenCV_FOUND)
   message(STATUS "Found OpenCV lib : ${OpenCV_VERSION} - ${OpenCV_INCLUDE_DIRS}")
+  if(WITH_OPENCV_CONTRIB)
+    message(STATUS "Going to use OpenCV contrib!")
+    add_definitions(-DOPENCV_CONTRIB)
+  endif()
 endif (OpenCV_FOUND)
 
 #Eigen3
@@ -154,33 +146,36 @@ target_link_libraries(${PROJECT_NAME}
     Sophus::Sophus
     Ceres::ceres
     opengv
+    Backward::Backward
     ${OpenCV_LIBRARIES}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
 )
 
+install(
+  DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(TARGETS ${PROJECT_NAME} backward backward_interface EXPORT export_${PROJECT_NAME})
+install(
+  EXPORT export_${PROJECT_NAME}
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+)
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp  ${BACKWARD_ENABLE})
-add_backward(${PROJECT_NAME}_node)
+add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp ${BACKWARD_ENABLE})
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
   image_transport
   std_msgs
   sensor_msgs
-  nav_msgs
-  visualization_msgs
   cv_bridge
-  image_transport
-  tf2_ros
-  pcl_ros
 )
 
-# Add mandatory dependencies
+## Add mandatory dependencies
 target_include_directories(${PROJECT_NAME}_node
-  PUBLIC
-    ${cv_bridge_INCLUDE_DIRS}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
@@ -191,12 +186,13 @@ target_include_directories(${PROJECT_NAME}_node
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
+  ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
 )
 
 install(TARGETS
   ${PROJECT_NAME}_node
-  ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
+  INCLUDES DESTINATION include
 )
 
 ament_package()
