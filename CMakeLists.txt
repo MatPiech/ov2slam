@@ -152,15 +152,10 @@ target_link_libraries(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
 )
 
-install(
-  DIRECTORY include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(TARGETS ${PROJECT_NAME} backward backward_interface EXPORT export_${PROJECT_NAME})
-install(
-  EXPORT export_${PROJECT_NAME}
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-)
+install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so DESTINATION lib)
+
+install(DIRECTORY include/ DESTINATION include)
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -196,9 +191,6 @@ install(TARGETS
   INCLUDES DESTINATION include
 )
 
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}/
-)
+install(DIRECTORY launch  DESTINATION share/${PROJECT_NAME}/)
 
 ament_package()
