@@ -1,0 +1,21 @@
+[submodule "thirdparty/ceres-solver"]
+	path = thirdparty/ceres-solver
+	url = https://github.com/ceres-solver/ceres-solver.git
+[submodule "thirdparty/Sophus"]
+	path = thirdparty/Sophus
+	url = https://github.com/strasdat/Sophus.git
+[submodule "thirdparty/backward-cpp"]
+	path = thirdparty/backward-cpp
+	url = https://github.com/bombela/backward-cpp.git
+[submodule "thirdparty/opengv"]
+	path = thirdparty/opengv
+	url = https://github.com/laurentkneip/opengv.git
+[submodule "thirdparty/opencv"]
+	path = thirdparty/opencv
+	url = https://github.com/opencv/opencv.git
+[submodule "thirdparty/opencv_contrib"]
+	path = thirdparty/opencv_contrib
+	url = https://github.com/opencv/opencv_contrib.git
+[submodule "thirdparty/eigen"]
+	path = thirdparty/eigen
+	url = https://gitlab.com/libeigen/eigen.git
