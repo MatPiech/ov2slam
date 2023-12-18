@@ -129,6 +129,7 @@ target_include_directories(${PROJECT_NAME}
     ${visualization_msgs_INCLUDE_DIRS}
     ${pcl_ros_INCLUDE_DIRS}
     /opt/ros/humble/include/cv_bridge
+    ${OpenCV_INCLUDE_DIRS}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
@@ -146,7 +147,6 @@ target_link_libraries(${PROJECT_NAME}
     Sophus::Sophus
     Ceres::ceres
     opengv
-    Backward::Backward
     ${OpenCV_LIBRARIES}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
@@ -166,6 +166,7 @@ install(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp ${BACKWARD_ENABLE})
+add_backward(${PROJECT_NAME}_node)
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
   image_transport
@@ -193,6 +194,11 @@ install(TARGETS
   ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
   INCLUDES DESTINATION include
+)
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_package()

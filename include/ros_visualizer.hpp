@@ -66,7 +66,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     RosVisualizer(std::shared_ptr<rclcpp::Node> &n)
-        : cameraposevisual_(1, 0, 0, 1)
+        : cameraposevisual_(1, 0, 0, 1), n_(n)
     {
         std::cout << "\nROS visualizer is being created...\n";
 
@@ -171,6 +171,8 @@ public:
         t.transform.rotation.z = q.z;
         t.transform.rotation.w = q.w;
 
+        // tf_broadcaster_->sendTransform(t);
+        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(n_);
         tf_broadcaster_->sendTransform(t);
 
         // 3. Publish camera visual
@@ -320,5 +322,6 @@ public:
 
     visualization_msgs::msg::Marker kfs_traj_msg_, final_kfs_traj_msg_;
 
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    std::shared_ptr<rclcpp::Node> n_;
 };

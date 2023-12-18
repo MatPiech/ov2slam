@@ -115,8 +115,7 @@ RUN mkdir build install && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_CXX_STANDARD=14 \
         -DCMAKE_CXX_FLAGS="-march=native" \
-        -DBUILD_EXAMPLES=OFF \
-        -DEigen3_DIR=/usr/local/share/eigen3/cmake \
+        -DBUILD_SOPHUS_EXAMPLES=OFF \
     && make -j`nproc` install
 
 ####################
