@@ -138,10 +138,10 @@ void SlamManager::run()
 
             // Update cam delay for automatic exit
             if( frame_id_ > 0 ) {
-                cam_delay = rclcpp::Clock().now().seconds() - last_img_time;
+                cam_delay = prosviz_->n_->now().seconds() - last_img_time;
                 last_img_time += cam_delay;
             } else {
-                last_img_time = rclcpp::Clock().now().seconds();
+                last_img_time = prosviz_->n_->now().seconds();
             }
 
             // Display info on current frame state
@@ -207,7 +207,7 @@ void SlamManager::run()
             // 3. Check if we are done with a sequence!
             // ========================================
             bool c1 = cam_delay > 0;
-            bool c2 = ( rclcpp::Clock().now().seconds() - last_img_time ) > 100. * cam_delay;
+            bool c2 = ( prosviz_->n_->now().seconds() - last_img_time ) > 100. * cam_delay;
             bool c3 = !bnew_img_available_;
 
             if( c1 && c2 && c3 )
@@ -600,7 +600,7 @@ void SlamManager::writeResults()
         std::lock_guard<std::mutex> lock(pmap_->map_mutex_);
         pmapper_->runFullBA();
 
-        prosviz_->pubPointCloud(pmap_->pcloud_, rclcpp::Clock().now().seconds());
+        prosviz_->pubPointCloud(pmap_->pcloud_, prosviz_->n_->now().seconds());
         visualizeFinalKFsTraj();
 
         for( const auto & kfid_pkf : pmap_->map_pkfs_ ) {

@@ -96,8 +96,8 @@ public:
 
                 if (!img0_buf.empty() && !img1_buf.empty())
                 {
-                    double time0 = img0_buf.front().header.stamp.sec;
-                    double time1 = img1_buf.front().header.stamp.sec;
+                    double time0 = rclcpp::Time( img0_buf.front().header.stamp ).seconds();
+                    double time1 = rclcpp::Time( img1_buf.front().header.stamp ).seconds();
 
                     // sync tolerance
                     if(time0 < time1 - 0.015)
@@ -131,7 +131,7 @@ public:
 
                 if ( !img0_buf.empty() )
                 {
-                    double time = img0_buf.front().header.stamp.sec;
+                    double time = rclcpp::Time( img0_buf.front().header.stamp ).seconds();
                     image0 = getGrayImageFromMsg(img0_buf.front());
                     img0_buf.pop();
 
