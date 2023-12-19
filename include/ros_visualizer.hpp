@@ -113,7 +113,7 @@ public:
 
         std_msgs::msg::Header header;
         header.frame_id = "world";
-        header.stamp = rclcpp::Time(time);
+        header.stamp = n_->get_clock()->now();
         sensor_msgs::msg::Image::SharedPtr imgTrackMsg = cv_bridge::CvImage(header, "rgb8", imgTrack).toImageMsg();
         pub_image_track_->publish(*imgTrackMsg);
     }
@@ -122,7 +122,7 @@ public:
     {   
         // 1. Publish marker message
         // =========================
-        vo_traj_msg_.header.stamp = rclcpp::Time(time);
+        vo_traj_msg_.header.stamp = n_->get_clock()->now();
         vo_traj_msg_.header.frame_id = "world";
 
         geometry_msgs::msg::Point p;
@@ -158,7 +158,7 @@ public:
         pub_vo_pose_->publish(Twc_msg);
 
         geometry_msgs::msg::TransformStamped t;
-        t.header.stamp = rclcpp::Time(time);
+        t.header.stamp = n_->get_clock()->now();
         t.header.frame_id = "world";
         t.child_frame_id = "camera";
 
@@ -223,7 +223,7 @@ public:
 
         std_msgs::msg::Header header;
         header.frame_id = "world";
-        header.stamp = rclcpp::Time(time);
+        header.stamp = n_->get_clock()->now();
 
         visualization_msgs::msg::MarkerArray markerArray_msg;
 
@@ -251,10 +251,10 @@ public:
             return;
         }
 
-        pcl::toROSMsg(*pcloud, *pc2_msg_);
-        pc2_msg_->header.frame_id = "map";
-        pc2_msg_->header.stamp = rclcpp::Time(time);
-        pub_point_cloud_->publish(*pc2_msg_);
+        pcl::toROSMsg(*pcloud, pc2_msg_);
+        pc2_msg_.header.frame_id = "world";
+        pc2_msg_.header.stamp = n_->get_clock()->now();
+        pub_point_cloud_->publish(pc2_msg_);
     }
 
     void addKFsTraj(const Sophus::SE3d &Twc)
@@ -277,7 +277,7 @@ public:
             return;
         }
 
-        kfs_traj_msg_.header.stamp = rclcpp::Time(time);
+        kfs_traj_msg_.header.stamp = n_->get_clock()->now();
         kfs_traj_msg_.header.frame_id = "world";
 
         pub_kfs_traj_->publish(kfs_traj_msg_);
@@ -289,7 +289,7 @@ public:
             return;
         }
 
-        final_kfs_traj_msg_.header.stamp = rclcpp::Time(time);
+        final_kfs_traj_msg_.header.stamp = n_->get_clock()->now();
         final_kfs_traj_msg_.header.frame_id = "world";
 
         geometry_msgs::msg::Point p;
@@ -313,7 +313,7 @@ public:
     CameraPoseVisualization cameraposevisual_;
 
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_point_cloud_;
-    sensor_msgs::msg::PointCloud2::SharedPtr pc2_msg_;
+    sensor_msgs::msg::PointCloud2 pc2_msg_;
 
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_kfs_pose_;
     std::vector<CameraPoseVisualization> vkeyframesposevisual_;
