@@ -134,8 +134,6 @@ RUN mkdir build install && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
     && make -j`nproc` install
 
-ADD . /ws/src/ov2slam
-
 ################
 ### OBIndex2 ###
 ################
@@ -176,5 +174,7 @@ RUN apt update \
         ros-humble-rviz2 \
     && rm -rf /var/lib/apt/lists/*
 
+ADD . /ws/src/ov2slam
+
 WORKDIR /ws
-RUN . /opt/ros/$ROS_DISTRO/setup.sh
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
