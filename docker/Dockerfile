@@ -22,7 +22,7 @@ ADD ./thirdparty /ws/src/ov2slam/thirdparty
 WORKDIR /ws/src/ov2slam/thirdparty/eigen
 RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j1 install \
+    && make -j`nproc` install \
     && ln -s /usr/local/include/eigen3/Eigen /usr/local/include/Eigen \
     && rm -rf /usr/include/eigen3
 
@@ -32,7 +32,7 @@ RUN mkdir build && cd build/ \
 WORKDIR /ws/src/ov2slam/thirdparty/opengv
 RUN mkdir build && cd build \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j1 install
+    && make -j`nproc` install
 
 ##############
 ### OpenCV ###
@@ -107,7 +107,7 @@ RUN mkdir build install && cd build \
         -D BUILD_opencv_python2=OFF \
         -D WITH_GSTREAMER=OFF \
         -D ENABLE_PRECOMPILED_HEADERS=OFF \
-    && make -j1 install
+    && make -j`nproc` install
 
 ##############
 ### Sophus ###
@@ -118,7 +118,7 @@ RUN mkdir build install && cd build/ \
         -DCMAKE_CXX_STANDARD=14 \
         -DCMAKE_CXX_FLAGS="-march=native" \
         -DBUILD_SOPHUS_EXAMPLES=OFF \
-    && make -j1 install
+    && make -j`nproc` install
 
 ####################
 ### Ceres Solver ###
@@ -134,7 +134,7 @@ RUN apt-get update \
 WORKDIR /ws/src/ov2slam/thirdparty/ceres-solver
 RUN mkdir build install && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j1 install
+    && make -j`nproc` install
 
 ################
 ### OBIndex2 ###
@@ -147,7 +147,7 @@ RUN apt update \
 WORKDIR /ws/src/ov2slam/thirdparty/obindex2
 RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j1
+    && make -j`nproc`
 
 ################
 ### iBoW-LCD ###
@@ -155,7 +155,7 @@ RUN mkdir build && cd build/ \
 WORKDIR /ws/src/ov2slam/thirdparty/ibow_lcd
 RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j1
+    && make -j`nproc`
 
 ###############
 ### OV²SLAM ###
@@ -179,4 +179,4 @@ RUN apt update \
 ADD . /ws/src/ov2slam
 
 WORKDIR /ws
-RUN . /opt/ros/$ROS_DISTRO/setup.sh && colcon build --parallel-workers 1
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
