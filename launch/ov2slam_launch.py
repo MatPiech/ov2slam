@@ -1,44 +1,65 @@
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
+from launch.actions import ExecuteProcess, DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    config = '/ws/src/ov2slam/parameters_files/accurate/kitti/kitti_00-02.yaml'
+    config = LaunchConfiguration('config', default='')
 
-    bag = '/ws/src/ov2slam/rosbags/kitti_2011_09_26_drive_0002_synced'
-    stream_rate = 1.0
-    delay = 10
+    bag = LaunchConfiguration('bag', default='')
+    stream_rate = LaunchConfiguration('stream_rate', default=1.0)
+    delay = LaunchConfiguration('delay', default=10)
 
-    visualize = False
-    rviz = '/ws/src/ov2slam/ov2slam_visualization.rviz'
+    visualize = LaunchConfiguration('visualize', default=False)
+    rviz_config = PathJoinSubstitution([FindPackageShare('ov2slam'), 'rviz', 'ov2slam_visualization.rviz'])
 
     entities = [
+        DeclareLaunchArgument(
+            'config',
+            default_value=config,
+            description='Configuration file',
+        ),
+        DeclareLaunchArgument(
+            'bag',
+            default_value=bag,
+            description='ROS2 bag file',
+        ),
+        DeclareLaunchArgument(
+            'stream_rate',
+            default_value=stream_rate,
+            description='ROS2 bag play rate',
+        ),
+        DeclareLaunchArgument(
+            'delay',
+            default_value=delay,
+            description='Delay of ROS2 bag play',
+        ),
+        DeclareLaunchArgument(
+            'visualize',
+            default_value=visualize,
+            description='Visualize topics using rviz2',
+        ),
+
         Node(
             package='ov2slam',
             executable='ov2slam_node',
             name='ov2slam_node',
-            output='screen',
             arguments=[config],
-        )
+            output='screen',
+        ),
+
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', rviz_config],
+            condition=IfCondition(visualize)
+        ),
+
+        ExecuteProcess(cmd=['ros2', 'bag', 'play', bag, '-d', delay, '-r', stream_rate])
     ]
-
-    if bag != '':
-        entities.append(
-            ExecuteProcess(
-                cmd=['ros2', 'bag', 'play', bag, f'-d {delay}', f'-r {stream_rate}'],
-                output='screen'
-            )
-        )
-
-    if visualize:
-        entities.append(
-                Node(
-                package='rviz2',
-                executable='rviz2',
-                name='rviz2',
-                arguments=['-d', rviz],
-            )
-        )
 
     return LaunchDescription(entities)
