@@ -16,7 +16,7 @@ For ROS Humble:
 cd ov2slam
 
 # Building SLAM image with dependencies...
-docker build . -f docker/Dockerfile -t ov2slam-humble --build-arg ROS_DISTRO=humble --build-arg ARCHITECTURE=arm64v8
+docker build . -f docker/Dockerfile -t ov2slam-humble --build-arg ROS_DISTRO=humble --build-arg ARCHITECTURE=amd64
 ```
     
 
@@ -28,7 +28,7 @@ Below are some sample commands for ROS Humble.
 docker run -it --rm  ov2slam-humble bash
 
 # inside docker container:
-source /ws/devel/setup.bash; 
+source /ws/install/setup.bash;
 
 ros2 launch ov2slam ov2slam.xml bag:=/ws/src/ov2slam/rosbags/kitti_2011_09_26_drive_0002_synced config:=/ws/src/ov2slam/parameters_files/accurate/kitti/kitti_00-02.yaml stream_rate:=1.0 delay:=5
 ```
