@@ -170,10 +170,9 @@ RUN apt update \
         ros-${ROS_DISTRO}-pcl-conversions \
         ros-${ROS_DISTRO}-tf2 \
         ros-${ROS_DISTRO}-tf2-geometry-msgs \
-        vim \
-        ros-humble-ros2bag \
-        ros-humble-rosbag2-storage-default-plugins \
-        ros-humble-rviz2 \
+        ros-${ROS_DISTRO}-ros2bag \
+        ros-${ROS_DISTRO}-rosbag2-storage-default-plugins \
+        ros-${ROS_DISTRO}-rviz2 \
     && rm -rf /var/lib/apt/lists/*
 
 ADD . /ws/src/ov2slam
