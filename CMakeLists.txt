@@ -29,17 +29,21 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 # First check if the related thridparty libs have been
 # built. Only set the use of iBoW-LCD to true if built.
 set(WITH_IBOW_LCD ON)
-if( EXISTS "${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so" )
-  add_definitions(-DIBOW_LCD)
-  message(STATUS "iBoW-LCD found!  Going to use Loop Closer!")
-else ( )
-  set(WITH_IBOW_LCD OFF)
-  message(STATUS "iBoW-LCD NOT found!  Loop Closer will not be enabled!")
-endif ( )
+# if( EXISTS "${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so" )
+add_definitions(-DIBOW_LCD)
+message(STATUS "iBoW-LCD found!  Going to use Loop Closer!")
+# else ( )
+#   set(WITH_IBOW_LCD OFF)
+#   message(STATUS "iBoW-LCD NOT found!  Loop Closer will not be enabled!")
+# endif ( )
 
 # OpenCV
 set(WITH_OPENCV_CONTRIB ON)
 find_package(OpenCV REQUIRED)
+
+find_package(lcdetector REQUIRED)
+find_package(obindex2 REQUIRED)
+
 
 if (OpenCV_FOUND)
   message(STATUS "Found OpenCV lib : ${OpenCV_VERSION} - ${OpenCV_INCLUDE_DIRS}")
@@ -140,7 +144,7 @@ target_include_directories(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
     ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -154,16 +158,17 @@ target_link_libraries(${PROJECT_NAME}
     opengv
     ${OpenCV_LIBRARIES}
 #   PRIVATE
-    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
+    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so   # should be found by cmake
+    lcdetector::lcdetector
 )
 
-if (WITH_IBOW_LCD)
-    target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
-    )
-    install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so DESTINATION lib)
-endif()
+# if (WITH_IBOW_LCD)
+#     target_link_libraries(${PROJECT_NAME}
+#         PRIVATE
+#         ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
+#     )
+#     install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so DESTINATION lib)
+# endif()
 
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
@@ -202,19 +207,20 @@ target_include_directories(${PROJECT_NAME}_node
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
     ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
 )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
 ${PROJECT_NAME}
-#   ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
+#   ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so   # should be found by cmake
+    lcdetector::lcdetector
 )
 
-if (WITH_IBOW_LCD)
-    target_link_libraries(${PROJECT_NAME}_node
-        ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so)
-endif()
+# if (WITH_IBOW_LCD)
+#     target_link_libraries(${PROJECT_NAME}_node
+#         ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so)
+# endif()
 
 install(TARGETS
   ${PROJECT_NAME}_node
