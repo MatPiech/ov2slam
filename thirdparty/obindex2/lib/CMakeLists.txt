@@ -4,13 +4,6 @@ project(obindex2 LANGUAGES CXX)
 # Compile tests or not
 option(EnableTesting "EnableTesting" ON)
 
-# Setting build type to Release
-# if(NOT CMAKE_BUILD_TYPE)
-#   set(CMAKE_BUILD_TYPE Release)
-# endif()
-
-message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
-
 # Setting the flags for profiling information or not
 if(CMAKE_BUILD_TYPE MATCHES Release)
   message(STATUS "Setting Release options")
@@ -26,9 +19,7 @@ endif()
 # include(CheckCXXCompilerFlag)
 # CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 # CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-
-set(CMAKE_CXX_STANDARD 14)
-
+#
 # if(COMPILER_SUPPORTS_CXX11)
 # #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 #    message(STATUS "Using flag -std=c++11.")
@@ -39,6 +30,8 @@ set(CMAKE_CXX_STANDARD 14)
 #    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.
 #                          Please use a different C++ compiler.")
 # endif()
+
+set(CMAKE_CXX_STANDARD 14)
 
 # Packages required to work with the library
 find_package(OpenCV REQUIRED) # OpenCV
@@ -53,36 +46,40 @@ endif()
 message(STATUS "Compiler flags: ${CMAKE_CXX_FLAGS}")
 
 include_directories(include
-                    external
-                    ${OpenCV_INCLUDE_DIRS}
-                    ${Boost_INCLUDE_DIRS})
+    external
+    ${OpenCV_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+)
 
-link_directories(${OpenCV_LIBRARIES}
-                 ${Boost_LIBRARIES})
+link_directories(
+    ${OpenCV_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 ### Targets ###
 add_library(obindex2
-            SHARED
-            src/binary_descriptor.cc
-            src/binary_tree_node.cc
+    SHARED
+    src/binary_descriptor.cc
+    src/binary_tree_node.cc
 
-            include/obindex2/binary_index.h
-            include/obindex2/binary_descriptor.h
-            include/obindex2/binary_tree_node.h
-            include/obindex2/binary_tree.h
-            include/obindex2/priority_queues.h
+    include/obindex2/binary_index.h
+    include/obindex2/binary_descriptor.h
+    include/obindex2/binary_tree_node.h
+    include/obindex2/binary_tree.h
+    include/obindex2/priority_queues.h
 
-            src/binary_tree.cc
-            src/binary_index.cc)
+    src/binary_tree.cc
+    src/binary_index.cc
+)
 target_link_libraries(obindex2
-                      ${OpenCV_LIBRARIES}
-                      ${Boost_LIBRARIES})
+    ${OpenCV_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 set_target_properties(obindex2
-    PROPERTIES PUBLIC_HEADER
-    "include/obindex2/binary_index.h;include/obindex2/binary_descriptor.h;include/obindex2/binary_tree_node.h;include/obindex2/binary_tree.h;include/obindex2/priority_queues.h"
-    )
-
+  PROPERTIES PUBLIC_HEADER
+  "include/obindex2/binary_index.h;include/obindex2/binary_descriptor.h;include/obindex2/binary_tree_node.h;include/obindex2/binary_tree.h;include/obindex2/priority_queues.h"
+)
 
 install(TARGETS obindex2
     EXPORT obindex2Config
@@ -90,7 +87,7 @@ install(TARGETS obindex2
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/obindex2
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
+)
 
 export(TARGETS
     obindex2

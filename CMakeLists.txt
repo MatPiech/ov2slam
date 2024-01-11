@@ -144,7 +144,7 @@ target_include_directories(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
     ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -207,14 +207,14 @@ target_include_directories(${PROJECT_NAME}_node
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
     ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
 )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-${PROJECT_NAME}
+  ${PROJECT_NAME}
 #   ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so   # should be found by cmake
-    lcdetector::lcdetector
+  lcdetector::lcdetector
 )
 
 # if (WITH_IBOW_LCD)
