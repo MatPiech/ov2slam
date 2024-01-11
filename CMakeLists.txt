@@ -25,25 +25,9 @@ set(CMAKE_BUILD_TYPE "Release")
 # ceres with it
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 
-# iBOW-LCD
-# First check if the related thridparty libs have been
-# built. Only set the use of iBoW-LCD to true if built.
-set(WITH_IBOW_LCD ON)
-# if( EXISTS "${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so" )
-add_definitions(-DIBOW_LCD)
-message(STATUS "iBoW-LCD found!  Going to use Loop Closer!")
-# else ( )
-#   set(WITH_IBOW_LCD OFF)
-#   message(STATUS "iBoW-LCD NOT found!  Loop Closer will not be enabled!")
-# endif ( )
-
 # OpenCV
 set(WITH_OPENCV_CONTRIB ON)
 find_package(OpenCV REQUIRED)
-
-find_package(lcdetector REQUIRED)
-find_package(obindex2 REQUIRED)
-
 
 if (OpenCV_FOUND)
   message(STATUS "Found OpenCV lib : ${OpenCV_VERSION} - ${OpenCV_INCLUDE_DIRS}")
@@ -53,14 +37,14 @@ if (OpenCV_FOUND)
   endif()
 endif (OpenCV_FOUND)
 
-#Eigen3
+# Eigen3
 find_package(Eigen3 REQUIRED)
 
 if (Eigen3_FOUND)
   message(STATUS "Found Eigen3 lib : ${Eigen3_VERSION} - ${EIGEN3_INCLUDE_DIRS}")
 endif (Eigen3_FOUND)
 
-#OpenGV
+# OpenGV
 find_package(opengv REQUIRED)
 
 if (opengv_FOUND)
@@ -75,12 +59,23 @@ if (Ceres_FOUND)
   message(STATUS "Found Ceres lib : ${CERES_VERSION} - ${Ceres_DIR}")
 endif (Ceres_FOUND)
 
-#Sophus
+# Sophus
 find_package(Sophus REQUIRED)
 
 if (Sophus_FOUND)
   message(STATUS "Found Sophus lib : ${Sophus_VERSION} - ${Sophus_DIR}")
 endif (Sophus_FOUND)
+
+# iBOW-LCD
+find_package(obindex2 REQUIRED)
+find_package(lcdetector REQUIRED)
+
+if (lcdetector_FOUND)
+  set(WITH_IBOW_LCD ON)
+  add_definitions(-DIBOW_LCD)
+  message(STATUS "iBoW-LCD found!  Going to use Loop Closer! : ${lcdetector_VERSION} - ${lcdetector_DIR}")
+endif (Sophus_FOUND)
+
 
 ###################
 ## Find packages ##
@@ -128,18 +123,7 @@ add_library(${PROJECT_NAME} SHARED
 # Add mandatory dependencies
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    # TODO remove because added above with ament_target_dependencies
-    # ${rclcpp_INCLUDE_DIRS}  # TODO remove
-    # ${std_msgs_INCLUDE_DIRS}  # TODO remove
-    # ${visualization_msgs_INCLUDE_DIRS}
-    # ${tf2_INCLUDE_DIRS}
-    # ${tf2_ros_INCLUDE_DIRS}
-    # ${PCL_INCLUDE_DIRS}
-    # ${pcl_conversions_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
-    # ${cvbridge_INCLUDE_DIRS}
-    # ${cv_bridge_INCLUDE_DIRS}
-    # ${CV_bridge_INCLUDE_DIRS}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
@@ -148,27 +132,13 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    # ${rclcpp_LIBRARIES}  # TODO remove
-    # ${std_msgs_LIBRARIES}  # TODO remove
-    # ${visualization_msgs_LIBRARIES}
-    # ${tf2_ros_LIBRARIES}
     Eigen3::Eigen
     Sophus::Sophus
     Ceres::ceres
     opengv
     ${OpenCV_LIBRARIES}
-#   PRIVATE
-    # ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so   # should be found by cmake
     lcdetector::lcdetector
 )
-
-# if (WITH_IBOW_LCD)
-#     target_link_libraries(${PROJECT_NAME}
-#         PRIVATE
-#         ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
-#     )
-#     install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so DESTINATION lib)
-# endif()
 
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
@@ -177,9 +147,7 @@ ament_target_dependencies(${PROJECT_NAME}
   visualization_msgs
   pcl_conversions
   PCL
-#   image_transport
   std_msgs
-#   sensor_msgs
   cv_bridge
   backward_ros
 )
@@ -213,14 +181,8 @@ target_include_directories(${PROJECT_NAME}_node
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
-#   ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so   # should be found by cmake
   lcdetector::lcdetector
 )
-
-# if (WITH_IBOW_LCD)
-#     target_link_libraries(${PROJECT_NAME}_node
-#         ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so)
-# endif()
 
 install(TARGETS
   ${PROJECT_NAME}_node
