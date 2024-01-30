@@ -97,9 +97,6 @@ find_package(pcl_conversions REQUIRED)
 ## Build ##
 ###########
 
-## add backward
-add_subdirectory(thirdparty/backward-cpp)
-
 ## Declare a C++ library
 add_library(${PROJECT_NAME} SHARED
   src/ov2slam.cpp
@@ -162,8 +159,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp ${BACKWARD_ENABLE})
-add_backward(${PROJECT_NAME}_node)
+add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp)
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
   image_transport

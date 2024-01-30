@@ -295,3 +295,8 @@ AMENT_IGNORE
 
 # Directory for keeping ROS bag files
 rosbags
+
+# Results files
+*.txt
+*.json
+*.csv
