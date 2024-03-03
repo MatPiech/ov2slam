@@ -83,7 +83,7 @@ body_T_cam1: !!opencv-matrix
 #--------------------------------------------------------------------------------------------
 # SLAM Parameters. Adjust them!
 #--------------------------------------------------------------------------------------------
-debug: 0
+debug: 1
 log_timings: 0
 
 mono: 0
@@ -95,7 +95,7 @@ force_realtime: 1
 slam_mode: 1
 
 # Loop Closing mode
-buse_loop_closer: 0
+buse_loop_closer: 1
 
 # Stereo rectify or not
 bdo_stereo_rect: 0
@@ -109,12 +109,12 @@ finit_parallax: 20.
 
 # Features Extractor
 use_shi_tomasi: 0
-use_fast: 1
+use_fast: 0
 use_brief: 1
-use_singlescale_detector: 0
+use_singlescale_detector: 1
 
 # Min dist between kps (define the number of kps)
-nmaxdist: 50
+nmaxdist: 45
 
 # Features quality th.
 nfast_th: 10
@@ -146,7 +146,7 @@ fmax_proj_pxdist: 2.
 
 # Randomize RANSAC?
 doepipolar: 1
-dop3p : 1
+dop3p : 0
 bdo_random: 1
 nransac_iter: 100
 fransac_err: 3.

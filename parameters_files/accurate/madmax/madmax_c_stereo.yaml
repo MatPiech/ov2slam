@@ -18,23 +18,37 @@ Camera.right_nwidth: 1032
 Camera.right_nheight: 772
 
 # Camera calibration and distortion parameters (OpenCV) 
-Camera.fxl: 867.511
-Camera.fyl: 866.993
-Camera.cxl: 519.346
-Camera.cyl: 383.792
+# Camera.fxl: 867.511
+# Camera.fyl: 866.993
+# Camera.cxl: 519.346
+# Camera.cyl: 383.792
 
-Camera.k1l: -0.197412
-Camera.k2l: 0.236726
+Camera.fxl: 868.246
+Camera.fyl: 868.246
+Camera.cxl: 516.0
+Camera.cyl: 386.0
+
+# Camera.k1l: -0.197412
+# Camera.k2l: 0.236726
+Camera.k1l: 0.0
+Camera.k2l: 0.0
 Camera.p1l: 0.0
 Camera.p2l: 0.0
 
-Camera.fxr: 869.378
-Camera.fyr: 869.104
-Camera.cxr: 520.204
-Camera.cyr: 384.551
+# Camera.fxr: 869.378
+# Camera.fyr: 869.104
+# Camera.cxr: 520.204
+# Camera.cyr: 384.551
 
-Camera.k1r: -0.1971
-Camera.k2r: 0.232887
+Camera.fxr: 868.246
+Camera.fyr: 868.246
+Camera.cxr: 516.0
+Camera.cyr: 386.0
+
+# Camera.k1r: -0.1971
+# Camera.k2r: 0.232887
+Camera.k1r: 0.0
+Camera.k2r: 0.0
 Camera.p1r: 0.0
 Camera.p2r: 0.0
 
@@ -56,6 +70,15 @@ body_T_cam1: !!opencv-matrix
           0., 1., 0., 0.000053,
           0., 0., 1., 0.000336,
            0., 0., 0., 1.]
+
+# body_T_cam1: !!opencv-matrix
+#    rows: 4
+#    cols: 4
+#    dt: d
+#    data: [0.999978, -0.001030, -0.006520, 0.089954,
+#           0.001044, 0.999997, 0.002126, 0.000053,
+#           0.006518, -0.002132, 0.999976, 0.000336,
+#            0., 0., 0., 1.]
 
 #--------------------------------------------------------------------------------------------
 # SLAM Parameters. Adjust them!
