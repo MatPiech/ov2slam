@@ -100,6 +100,9 @@ public:
         final_kfs_traj_msg_.color.r = 0.75;
         final_kfs_traj_msg_.color.g = 0.25;
         final_kfs_traj_msg_.color.b = 0.25;
+
+        // Initialize the transform broadcaster
+        tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(n_);
     }
 
     void pubTrackImage(const cv::Mat &imgTrack, const double time)
@@ -168,34 +171,25 @@ public:
         t.transform.rotation.z = q.z;
         t.transform.rotation.w = q.w;
 
-        // tf_broadcaster_->sendTransform(t);
-        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(n_);
         tf_broadcaster_->sendTransform(t);
 
         // 3. Publish camera visual
-        // =========================
+        // ========================
         cameraposevisual_.reset();
         cameraposevisual_.add_pose(twc, eigen_q);
         cameraposevisual_.setImageBoundaryColor(1, 0, 0);
         cameraposevisual_.setOpticalCenterConnectorColor(1, 0, 0);
         cameraposevisual_.publish_by(camera_pose_visual_pub_, Twc_msg.header);
 
-        // if( vo_traj_msg_.points.size() >= 3600 ) {
+        // 4. Filter old visualization points
+        // ==================================
+        // if( vo_traj_msg_.points.size() >= 1500 ) {
         //     size_t nbpts = vo_traj_msg_.points.size();
         //     std::vector<geometry_msgs::msg::Point> vtmp;
-        //     // if( nbpts / 20 < 3600 ) {
-        //         vtmp.reserve(nbpts / 20);
-        //         for( size_t i = 0 ; i < nbpts ; i+=20 ) {
-        //             vtmp.push_back(vo_traj_msg_.points.at(i));
-        //         }
-        //     // } 
-        //     // else {
-        //     //     vtmp.reserve(nbpts / 100);
-        //     //     for( size_t i = 0 ; i < nbpts ; i+=100 ) {
-        //     //         vtmp.push_back(vo_traj_msg_.points.at(i));
-        //     //     }
-        //     // }
-
+        //     vtmp.reserve(nbpts / 30);
+        //     for( size_t i = 0 ; i < nbpts ; i += 30 ) {
+        //         vtmp.push_back(vo_traj_msg_.points.at(i));
+        //     }
         //     vo_traj_msg_.points.swap(vtmp);
         // }
 
@@ -319,6 +313,6 @@ public:
 
     visualization_msgs::msg::Marker kfs_traj_msg_, final_kfs_traj_msg_;
 
-    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     std::shared_ptr<rclcpp::Node> n_;
 };
