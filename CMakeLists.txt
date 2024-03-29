@@ -23,19 +23,7 @@ set(CMAKE_BUILD_TYPE "Release")
 # If you experience exceptions you can either re-compile
 # opengv and ov2slam without -march=native or re-compile
 # ceres with it
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -march=native -g")
-
-# iBOW-LCD
-# First check if the related thridparty libs have been
-# built. Only set the use of iBoW-LCD to true if built.
-set(WITH_IBOW_LCD ON)
-if( EXISTS "${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so" )
-  add_definitions(-DIBOW_LCD)
-  message(STATUS "iBoW-LCD found!  Going to use Loop Closer!")
-else ( )
-  set(WITH_IBOW_LCD OFF)
-  message(STATUS "iBoW-LCD NOT found!  Loop Closer will not be enabled!")
-endif ( )
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 
 # OpenCV
 set(WITH_OPENCV_CONTRIB ON)
@@ -49,14 +37,14 @@ if (OpenCV_FOUND)
   endif()
 endif (OpenCV_FOUND)
 
-#Eigen3
+# Eigen3
 find_package(Eigen3 REQUIRED)
 
 if (Eigen3_FOUND)
   message(STATUS "Found Eigen3 lib : ${Eigen3_VERSION} - ${EIGEN3_INCLUDE_DIRS}")
 endif (Eigen3_FOUND)
 
-#OpenGV
+# OpenGV
 find_package(opengv REQUIRED)
 
 if (opengv_FOUND)
@@ -71,12 +59,23 @@ if (Ceres_FOUND)
   message(STATUS "Found Ceres lib : ${CERES_VERSION} - ${Ceres_DIR}")
 endif (Ceres_FOUND)
 
-#Sophus
+# Sophus
 find_package(Sophus REQUIRED)
 
 if (Sophus_FOUND)
   message(STATUS "Found Sophus lib : ${Sophus_VERSION} - ${Sophus_DIR}")
 endif (Sophus_FOUND)
+
+# iBOW-LCD
+find_package(obindex2 REQUIRED)
+find_package(lcdetector REQUIRED)
+
+if (lcdetector_FOUND)
+  set(WITH_IBOW_LCD ON)
+  add_definitions(-DIBOW_LCD)
+  message(STATUS "iBoW-LCD found!  Going to use Loop Closer! : ${lcdetector_VERSION} - ${lcdetector_DIR}")
+endif (Sophus_FOUND)
+
 
 ###################
 ## Find packages ##
@@ -92,6 +91,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(PCL REQUIRED)
 find_package(pcl_conversions REQUIRED)
+find_package(backward_ros REQUIRED)
 
 ###########
 ## Build ##
@@ -123,38 +123,34 @@ add_library(${PROJECT_NAME} SHARED
 # Add mandatory dependencies
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    ${rclcpp_INCLUDE_DIRS}
-    ${std_msgs_INCLUDE_DIRS}
-    ${visualization_msgs_INCLUDE_DIRS}
-    ${tf2_INCLUDE_DIRS}
-    ${tf2_ros_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
-    ${pcl_conversions_INCLUDE_DIRS}
-    /opt/ros/humble/include/cv_bridge
     ${OpenCV_INCLUDE_DIRS}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
     ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
 )
 
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC
-    ${rclcpp_LIBRARIES}
-    ${std_msgs_LIBRARIES}
-    ${visualization_msgs_LIBRARIES}
-    ${tf2_ros_LIBRARIES}
     Eigen3::Eigen
     Sophus::Sophus
     Ceres::ceres
     opengv
     ${OpenCV_LIBRARIES}
-  PRIVATE
-    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
+    lcdetector::lcdetector
 )
 
-install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so DESTINATION lib)
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  tf2
+  tf2_ros
+  visualization_msgs
+  pcl_conversions
+  PCL
+  std_msgs
+  cv_bridge
+  backward_ros
+)
 
 install(DIRECTORY include/ DESTINATION include)
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
@@ -162,8 +158,8 @@ install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp ${BACKWARD_ENABLE})
-add_backward(${PROJECT_NAME}_node)
+add_executable(${PROJECT_NAME}_node src/ov2slam_node.cpp)
+
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
   image_transport
@@ -178,13 +174,13 @@ target_include_directories(${PROJECT_NAME}_node
     ${PROJECT_SOURCE_DIR}/include/
     ${PROJECT_SOURCE_DIR}/include/ceres_parametrization/
     ${PROJECT_SOURCE_DIR}/thirdparty/obindex2/lib/include/
-    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/
+    ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/include/   # should be found by cmake
 )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
-  ${PROJECT_SOURCE_DIR}/thirdparty/ibow_lcd/build/liblcdetector.so
+  lcdetector::lcdetector
 )
 
 install(TARGETS

@@ -147,7 +147,7 @@ RUN apt update \
 WORKDIR /ws/src/ov2slam/thirdparty/obindex2
 RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j`nproc`
+    && make -j`nproc` install
 
 ################
 ### iBoW-LCD ###
@@ -155,7 +155,7 @@ RUN mkdir build && cd build/ \
 WORKDIR /ws/src/ov2slam/thirdparty/ibow_lcd
 RUN mkdir build && cd build/ \
     && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" \
-    && make -j`nproc`
+    && make -j`nproc` install
 
 ###############
 ### OV²SLAM ###
@@ -173,6 +173,7 @@ RUN apt update \
         ros-${ROS_DISTRO}-ros2bag \
         ros-${ROS_DISTRO}-rosbag2-storage-default-plugins \
         ros-${ROS_DISTRO}-rviz2 \
+        ros-${ROS_DISTRO}-backward-ros \
     && rm -rf /var/lib/apt/lists/*
 
 ADD . /ws/src/ov2slam

@@ -24,7 +24,7 @@ def run_evo(gt_path: str, results_dir_path: str, results_filenames: list[str]):
             traj_est = file_interface.read_tum_trajectory_file(exp_results_file)
             traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
             
-            result = main_ape.ape(traj_ref, traj_est, est_name=est_name, pose_relation=metrics.PoseRelation.point_distance, align=True, correct_scale=False)
+            result = main_ape.ape(traj_ref, traj_est, est_name=est_name, pose_relation=metrics.PoseRelation.translation_part, align=True, correct_scale=False)
             stats = result.stats
             
             with open(exp_results_file, 'r') as f:
@@ -59,15 +59,17 @@ def create_df_csv(eval_results_file: str, results_filename: str):
 
 
 if __name__ == '__main__':
-    results_filenames = ['ov2slam_traj.txt', 'ov2slam_kfs_traj.txt', 'fixed_ov2slam_full_traj_wlc_opt.txt']
+    # results_filenames = ['ov2slam_traj.txt', 'ov2slam_kfs_traj.txt', 'fixed_ov2slam_full_traj_wlc_opt.txt']
+    results_filenames = ['fixed_vo_pose.tum']
 
-    for exp in ['C0', 'C1']:
+    # for exp in ['C0', 'C1']
+    for exp in ['C0']:
         print(f'Experiment bag {exp}')
         results_dir_path = f'./results/{exp}'
         gt_path = f'./{exp}_ground_truth.txt'
 
-        # run_evo(gt_path, results_dir_path, results_filenames)
+        run_evo(gt_path, results_dir_path, results_filenames)
 
         for results_filename in results_filenames:
             get_min_error_config_id(f'./results/{exp}_eval_results.json', results_filename=results_filename, error_name='rmse')
-            # create_df_csv(f'./results/{exp}_eval_results.json', results_filename=results_filename)
+            create_df_csv(f'./results/{exp}_eval_results.json', results_filename=results_filename)
