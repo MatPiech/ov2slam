@@ -97,9 +97,6 @@ find_package(backward_ros REQUIRED)
 ## Build ##
 ###########
 
-## add backward
-add_subdirectory(thirdparty/backward-cpp)
-
 ## Declare a C++ library
 add_library(${PROJECT_NAME} SHARED
   src/ov2slam.cpp

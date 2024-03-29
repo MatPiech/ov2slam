@@ -102,7 +102,7 @@ public:
         final_kfs_traj_msg_.color.b = 0.25;
 
         // Initialize the transform broadcaster
-        tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(n_);
+        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(n_);
     }
 
     void pubTrackImage(const cv::Mat &imgTrack, const double time)
@@ -313,6 +313,6 @@ public:
 
     visualization_msgs::msg::Marker kfs_traj_msg_, final_kfs_traj_msg_;
 
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     std::shared_ptr<rclcpp::Node> n_;
 };
