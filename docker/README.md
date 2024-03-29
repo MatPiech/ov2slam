@@ -30,7 +30,7 @@ docker run -it --rm  ov2slam-humble bash
 # inside docker container:
 source /ws/install/setup.bash;
 
-ros2 launch ov2slam ov2slam.xml bag:=/ws/src/ov2slam/rosbags/kitti_2011_09_26_drive_0002_synced config:=/ws/src/ov2slam/parameters_files/accurate/kitti/kitti_00-02.yaml stream_rate:=1.0 delay:=5
+ros2 launch ov2slam ov2slam_launch.py bag:=/ws/src/ov2slam/rosbags/kitti_2011_09_26_drive_0002_synced config:=/ws/src/ov2slam/parameters_files/accurate/kitti/kitti_00-02.yaml stream_rate:=1.0 delay:=5
 ```
 
 Running with X forwarding (there are security concerns, see [http://wiki.ros.org/docker/Tutorials/GUI](http://wiki.ros.org/docker/Tutorials/GUI) for details)
