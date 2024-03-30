@@ -1,17 +1,39 @@
 #!/bin/sh
 
 ##############
+### Eigen3 ###
+##############
+echo -e "\nBuilding Eigen3 lib...\n"
+
+cd eigen
+mkdir build && cd build/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native"
+make -j`nproc` && make install
+cd ../..
+
+##############
+### OpenGV ###
+##############
+echo -e "\nBuilding OpenGV lib...\n"
+
+cd opengv
+mkdir build && cd build/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native"
+make -j`nproc` && make install
+cd ../..
+
+##############
 ### OpenCV ###
 ##############
 echo -e "\nBuilding OpenCV lib...\n"
 
-cd thirdparty/opencv
+cd opencv
 mkdir build install && cd build
 cmake .. -D CMAKE_BUILD_TYPE=RELEASE \
     -D INSTALL_C_EXAMPLES=OFF \
     -D INSTALL_PYTHON_EXAMPLES=OFF \
     -D OPENCV_GENERATE_PKGCONFIG=ON \
-    -D OPENCV_EXTRA_MODULES_PATH="../../opencv_contrib/modules" \
+    -D OPENCV_EXTRA_MODULES_PATH="../opencv_contrib/modules" \
     -D BUILD_EXAMPLES=OFF \
     -D OPENCV_ENABLE_NONFREE=ON \
     -D WITH_IPP=OFF \
@@ -59,62 +81,50 @@ cmake .. -D CMAKE_BUILD_TYPE=RELEASE \
     -D BUILD_opencv_ml=ONN \
     -D BUILD_opencv_python2=OFF \
     -D WITH_GSTREAMER=OFF \
-    -D ENABLE_PRECOMPILED_HEADERS=OFF \
-    -D CMAKE_INSTALL_PREFIX="../install/"
+    -D ENABLE_PRECOMPILED_HEADERS=OFF
 make -j`nproc` install
-cd ../../..
-
-##############
-### OpenGV ###
-##############
-echo -e "\nBuilding OpenGV lib...\n"
-
-cd thirdparty/opengv
-mkdir build && cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j`nproc` && make install
-cd ../../..
-
-################
-### OBIndex2 ###
-################
-echo -e "\nBuilding OBIndex2 lib...\n"
-
-cd thirdparty/obindex2
-mkdir build && cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j`nproc`
-cd ../../..
-
-################
-### iBoW-LCD ###
-################
-echo -e "\nBuilding iBoW-LCD lib...\n"
-
-cd thirdparty/ibow_lcd
-mkdir build && cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j`nproc`
-cd ../../..
+cd ../..
 
 ##############
 ### Sophus ###
 ##############
 echo -e "\nBuilding Sophus lib...\n"
 
-cd thirdparty/Sophus
+cd Sophus
 mkdir build install && cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="../install/"
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DBUILD_SOPHUS_EXAMPLES=OFF
 make -j`nproc` install
-cd ../../..
+cd ../..
 
 ####################
 ### Ceres Solver ###
 ####################
 echo -e "\nBuilding Ceres Solver lib...\n"
 
-cd thirdparty/ceres-solver
+cd ceres-solver
 mkdir build install && cd build/
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" -DCMAKE_INSTALL_PREFIX="../install/" -DBUILD_EXAMPLES=OFF
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" 
 make -j`nproc` install
-cd ../../..
+cd ../..
+
+################
+### OBIndex2 ###
+################
+echo -e "\nBuilding OBIndex2 lib...\n"
+
+cd obindex2
+mkdir build && cd build/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" 
+make -j`nproc`
+cd ../..
+
+################
+### iBoW-LCD ###
+################
+echo -e "\nBuilding iBoW-LCD lib...\n"
+
+cd ibow_lcd
+mkdir build && cd build/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_FLAGS="-march=native" 
+make -j`nproc`
+cd ../..
